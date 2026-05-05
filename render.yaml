@@ -1,18 +1,19 @@
 services:
   - type: web
-    name: ilynect-backend
+    name: ilynect
     env: node
+    region: oregon
     plan: free
-    buildCommand: cd backend && npm install
+    buildCommand: cd backend && npm install --production
     startCommand: cd backend && node server.js
     envVars:
-      - key: GROQ_API_KEY
-        sync: false
-      - key: ADMIN_EMAIL
-        value: aviindo863@gmail.com
-      - key: JWT_SECRET
-        generate: true
       - key: NODE_ENV
         value: production
-    healthCheckPath: /api/health
-    autoDeploy: true
+      - key: PORT
+        value: 3001
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: GROQ_API_KEY
+        sync: false

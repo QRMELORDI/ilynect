@@ -235,7 +235,7 @@ io.on('connection', (socket) => {
   });
 });
 
-const frontDist = path.join(__dirname, '..', 'frontend', 'dist');
+const frontDist = path.join(__dirname, 'dist');
 if (fs.existsSync(frontDist)) {
   app.use(express.static(frontDist));
   app.get('*', (req, res) => res.sendFile(path.join(frontDist, 'index.html')));
