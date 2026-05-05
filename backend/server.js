@@ -199,13 +199,6 @@ app.post('/api/ai/ask', async (req, res) => {
     "\ud83c\udf0d GK: \u0c2d\u0c3e\u0c30\u0c24\u0c26\u0c47\u0c36\u0c02\u0c32\u0c4b \u0c05\u0c24\u0c4d\u0c2f\u0c27\u0c3f\u0c15 \u0c1c\u0c28\u0c3e\u0c2d\u0c4d\u0c30\u0c3e \u0c17\u0c32 \u0c30\u0c3e\u0c37\u0c4d\u0c1f\u0c4d\u0c30\u0c02 \u0c09\u0c24\u0c4d\u0c24\u0c30 \u0c2a\u0c4d\u0c30\u0c26\u0c47\u0c36\u0c4d.",
     "\ud83d\udca1 \u0c28\u0c40\u0c24\u0c3f\u0c35\u0c3e\u0c15\u0c4d\u0c2f\u0c02: \u0c15\u0c37\u0c4d\u0c1f\u0c2a\u0c21\u0c3f\u0c24\u0c47 \u0c2b\u0c32\u0c3f\u0c24\u0c02 \u0c24\u0c2a\u0c4d\u0c2a\u0c15 \u0c35\u0c38\u0c4d\u0c24\u0c41\u0c02\u0c26\u0c3f. \u0c13\u0c2f\u0c2e\u0c3f \u0c35\u0c3f\u0c2b\u0c32\u0c2f\u0c02 \u0c15\u0c42\u0c21\u0c3e, \u0c12\u0c15 \u0c2c\u0c21\u0c3f."
   ];
-  const eduResponses = [
-    "📚 Nel|cukovaadam jeevitaamtaa konnaasarip| prakriyam. Prati ro|ju oka|s k|v| Vishayam nel|cukun|chi.",
-    "🔬 Vijnaanam: Bhoomi vayass su|mara 4.5 billion varshaalu.",
-    "🧮 Ganitham: 0 ni ee san|khyath| भाग|िंद|naa| phalitam 0. Kaan| ee san|khyani 0 tho bhaj| chey|koodu.",
-    "🌍 GK: Bharathad|eshallo atyadhika janaabaka|k| raksha|ram Uttar Pradeshu.",
-    "💡 Maata: Kasha|padt|itey| phal|tu takk| vasthu|di. O|tami v|yaphalyamu koodu, oka ba|Di."
-  ];
   const pool = isHealth ? healthResponses : eduResponses;
   const fallbackText = pool[Math.floor(Math.random() * pool.length)];
   res.json({
