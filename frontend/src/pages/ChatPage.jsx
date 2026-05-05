@@ -112,7 +112,7 @@ export default function ChatPage() {
     <div className="page-wrapper" style={{ 
       display: 'flex', 
       flexDirection: 'column', 
-      height: '100dvh', 
+      height: 'calc(100dvh - 60px)', 
       paddingBottom: 0,
       background: 'var(--bg-primary)'
     }}>

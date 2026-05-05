@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getVideos, recordView, interactVideo } from '../services/api';
+import { getVideos, recordView, interactVideo, deleteVideo } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function GossipPage() {
@@ -8,6 +8,7 @@ export default function GossipPage() {
   const [reels, setReels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentRef] = useState(0);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
   const navigate = useNavigate();
   const containerRef = useRef();
 
@@ -30,6 +31,23 @@ export default function GossipPage() {
         setReels(prev => prev.map(r => r.id === id ? { ...r, likes: res.likes, dislikes: res.dislikes } : r));
       }
     } catch {}
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm('Delete this reel?')) {
+      try {
+        await deleteVideo(id);
+        setDeleteConfirm(null);
+        loadReels();
+      } catch {
+        alert('Failed to delete');
+      }
+    }
+  };
+
+  const canDelete = (reel) => {
+    const isAdmin = user?.role === 'admin' || user?.email === 'aviindo863@gmail.com';
+    return isAdmin || reel.uploaded_by === user?.uid;
   };
 
   if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div className="spinner" /></div>;
@@ -78,14 +96,32 @@ export default function GossipPage() {
                    </div>
                 </div>
 
-                {/* Info */}
-                <div style={{ position: 'absolute', left: 15, bottom: 40, zIndex: 10, maxWidth: '70%' }}>
-                   <div style={{ fontWeight: 900, color: '#fff', fontSize: '1rem', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>@{reel.userName?.toUpperCase() || 'FAMILY'}</div>
-                   <div style={{ color: '#fff', fontSize: '0.85rem', marginTop: 5, textShadow: '0 1px 5px rgba(0,0,0,0.5)' }}>{reel.title}</div>
-                   <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.65rem', marginTop: 4, fontWeight: 700 }}>📍 {reel.location}</div>
-                </div>
-             </div>
-           ))}
+                 {/* Info */}
+                 <div style={{ position: 'absolute', left: 15, bottom: 80, zIndex: 10, maxWidth: '70%' }}>
+                    <div style={{ fontWeight: 900, color: '#fff', fontSize: '1rem', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>@{reel.userName?.toUpperCase() || 'FAMILY'}</div>
+                    <div style={{ color: '#fff', fontSize: '0.85rem', marginTop: 5, textShadow: '0 1px 5px rgba(0,0,0,0.5)' }}>{reel.title}</div>
+                    <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.65rem', marginTop: 4, fontWeight: 700 }}>📍 {reel.location}</div>
+                    {canDelete(reel) && (
+                      <button onClick={() => setDeleteConfirm(reel.id)} style={{ background: 'rgba(255,59,48,0.2)', border: '1px solid rgba(255,59,48,0.4)', color: '#FF3B30', padding: '4px 12px', borderRadius: 8, fontSize: '0.7rem', fontWeight: 800, marginTop: 8, cursor: 'pointer' }}>
+                        DELETE
+                      </button>
+                    )}
+                 </div>
+              </div>
+            ))}
+         </div>
+       )}
+
+      {deleteConfirm && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setDeleteConfirm(null)}>
+          <div style={{ background: 'var(--bg-secondary)', borderRadius: 20, padding: 24, maxWidth: 300, textAlign: 'center' }} onClick={e => e.stopPropagation()}>
+            <div style={{ fontSize: '2rem', marginBottom: 12 }}>🗑️</div>
+            <div style={{ fontWeight: 800, marginBottom: 8, color: 'var(--text-primary)' }}>Delete this reel?</div>
+            <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
+              <button onClick={() => setDeleteConfirm(null)} style={{ flex: 1, padding: '12px', borderRadius: 12, border: '1px solid var(--border-glass)', background: 'transparent', color: 'var(--text-primary)', fontWeight: 800, cursor: 'pointer' }}>Cancel</button>
+              <button onClick={() => handleDelete(deleteConfirm)} style={{ flex: 1, padding: '12px', borderRadius: 12, border: 'none', background: 'var(--primary-pink)', color: '#fff', fontWeight: 800, cursor: 'pointer' }}>Delete</button>
+            </div>
+          </div>
         </div>
       )}
 

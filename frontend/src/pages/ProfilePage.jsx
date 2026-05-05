@@ -7,8 +7,8 @@ import { getHistory } from '../services/api';
 const FLOWERS = ['🌸','🌹','🌻','🌺','🌷','🌼','💐','🌿','🍀','🌾'];
 
 export default function ProfilePage() {
-  const { user, logout, toggleTheme, theme, updateName } = useAuth();
-  const { language, toggleLanguage } = useSettings();
+  const { user, logout, updateName } = useAuth();
+  const { language, toggleLanguage, theme, toggleTheme } = useSettings();
   const [stats, setStats] = useState({ views: 0, uploads: 0, chats: 0 });
   const [history, setHistory] = useState([]);
   const [editing, setEditing] = useState(false);
@@ -38,7 +38,7 @@ export default function ProfilePage() {
   const isAdmin = user?.role === 'admin' || user?.email === 'aviindo863@gmail.com';
 
   return (
-    <div className="page-wrapper" style={{ background: 'var(--bg-primary)' }}>
+    <div className="page-wrapper" style={{ background: 'var(--bg-primary)', paddingBottom: 100 }}>
       <div className="container" style={{ maxWidth: 500, paddingTop: 20 }}>
         
         <div style={{ textAlign: 'center', marginBottom: 30 }}>

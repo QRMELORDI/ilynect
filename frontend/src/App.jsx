@@ -56,12 +56,10 @@ function AppRoutes() {
     handleFocus();
 
     const backListener = CapacitorApp.addListener('backButton', ({ canGoBack }) => {
-      if (location.pathname === '/') {
+      if (location.pathname === '/' || location.pathname === '/profile') {
         CapacitorApp.exitApp();
-      } else if (canGoBack) {
-        window.history.back();
       } else {
-        navigate('/');
+        navigate(-1);
       }
     });
 

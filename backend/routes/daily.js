@@ -79,7 +79,21 @@ async function generateDailyContentWithAI(date) {
     }
   } catch (err) {
     console.error("AI Generation Error:", err);
-    // Fallback to static content if AI fails
+    const staticContent = [
+      { type: 'fact', content: 'Science Fact: Honey never spoils. Archaeologists have found 3000-year-old honey in Egyptian tombs that was still edible.', lang: 'en' },
+      { type: 'quiz', content: 'What has keys but cant open locks? (Answer: A piano)', lang: 'en' },
+      { type: 'gk', content: 'Who wrote the Indian National Anthem? Rabindranath Tagore.', lang: 'en' },
+      { type: 'manchi_maata', content: 'కష్టపడితే ఫలితం తప్పక వస్తుంది. ఓటమి కూడా ఒక బడి.', lang: 'te' },
+      { type: 'speciality', content: 'Today is a new opportunity to learn, grow, and connect with loved ones!', lang: 'en' },
+      { type: 'joke', content: 'టీచర్: నీకు ఏం కావాలి? స్టూడెంట్: సెలవులు మాత్రమే సార్!', lang: 'te' },
+      { type: 'health_tip', content: 'రోజుకు 8 గ్లాసుల నీరు తాగండి. ప్రతిరోజు 30 నిమిషాలు నడక. 7-8 గంటలు నిద్ర పడుకోండి. పండ్లు కూరగాయలు ఎక్కువగా తినండి. ఒత్తిడి తగ్గించడానికి ధ్యానం చేయండి.', lang: 'te' }
+    ];
+    for (const item of staticContent) {
+      await db.runAsync(
+        `INSERT OR IGNORE INTO daily_content (type, content, language, active_date) VALUES (?, ?, ?, ?)`,
+        [item.type, item.content, item.lang, date]
+      );
+    }
   }
 }
 

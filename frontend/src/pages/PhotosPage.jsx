@@ -32,7 +32,8 @@ export default function PhotosPage() {
   };
 
   const handleDelete = async (photo) => {
-    if (photo.userId !== user.uid) {
+    const isAdmin = user?.role === 'admin' || user?.email === 'aviindo863@gmail.com';
+    if (!isAdmin && photo.uploaded_by !== user?.uid) {
       alert('Access Denied: You can only delete your own uploads.');
       return;
     }
@@ -97,7 +98,7 @@ export default function PhotosPage() {
             <button className="btn btn-primary" onClick={() => handleDownload(lightbox)}>
               DOWNLOAD
             </button>
-            {lightbox.userId === user.uid && (
+            {(lightbox.uploaded_by === user?.uid || user?.role === 'admin' || user?.email === 'aviindo863@gmail.com') && (
               <button className="btn" style={{ background: 'rgba(255,255,255,0.1)', color: 'var(--primary-pink)' }} onClick={() => handleDelete(lightbox)}>
                 DELETE
               </button>

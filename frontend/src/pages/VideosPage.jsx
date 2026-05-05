@@ -99,9 +99,10 @@ export default function VideosPage() {
     : videos;
 
   const isAdmin = user?.role === 'admin' || user?.email === 'aviindo863@gmail.com';
+  const canDelete = (video) => isAdmin || video.uploaded_by === user?.uid;
 
   return (
-    <div className="page-wrapper" style={{ background: 'var(--bg-primary)' }}>
+    <div className="page-wrapper" style={{ background: 'var(--bg-primary)', paddingBottom: 100 }}>
       {playing && (
         <VideoPlayer 
           video={playing} 
@@ -115,7 +116,7 @@ export default function VideosPage() {
           onWatch={handleWatch} 
           onDownload={handleDownload}
           onShare={() => handleShare(selectedItem)}
-          onDelete={isAdmin ? () => handleDelete(selectedItem.id) : null}
+          onDelete={canDelete(selectedItem) ? () => handleDelete(selectedItem.id) : null}
           onClose={() => setSelectedItem(null)} 
         />
       )}

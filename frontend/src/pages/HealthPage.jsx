@@ -17,22 +17,45 @@ export default function HealthPage() {
   useEffect(() => {
     getDailyContent('health')
       .then(data => {
-        // Handle both single fact or array of tips
         let processedTips = [];
         if (Array.isArray(data)) {
           processedTips = data;
-        } else if (typeof data === 'string') {
+        } else if (typeof data === 'string' && data) {
           processedTips = [data];
         } else if (data && data.fact) {
           processedTips = [data.fact];
+        } else if (data && Array.isArray(data.tips)) {
+          processedTips = data.tips;
         }
-        
+        if (processedTips.length === 0 && data) {
+          const keys = Object.keys(data);
+          for (const key of keys) {
+            if (typeof data[key] === 'string' && data[key].length > 5) {
+              processedTips.push(data[key]);
+            } else if (Array.isArray(data[key])) {
+              processedTips.push(...data[key]);
+            }
+          }
+        }
+        if (processedTips.length === 0) {
+          processedTips = [
+            '\ud83d\udca7 \u0c30\u0c4b\u0c1c\u0c41\u0c15\u0c41 8-10 \u0c17\u0c4d\u0c32\u0c3e\u0c38\u0c41\u0c32 \u0c28\u0c40\u0c30\u0c41 \u0c24\u0c3e\u0c17\u0c02\u0c21\u0c3f.',
+            '\ud83d\udeb6 \u0c2a\u0c4d\u0c30\u0c24\u0c3f\u0c30\u0c4b\u0c1c\u0c41 30 \u0c28\u0c3f\u0c2e\u0c3f\u0c37\u0c3e\u0c32 \u0c28\u0c21\u0c15.',
+            '\ud83d\ude34 7-8 \u0c17\u0c02\u0c1f\u0c32 \u0c28\u0c3f\u0c26\u0c4d\u0c30 \u0c2a\u0c21\u0c41\u0c15\u0c4b\u0c02\u0c21\u0c3f.',
+            '\ud83c\udf4e \u0c2a\u0c02\u0c21\u0c4d\u0c32\u0c41, \u0c15\u0c42\u0c30\u0c17\u0c3e\u0c2f\u0c32\u0c41 \u0c0e\u0c15\u0c4d\u0c15\u0c41\u0c35\u0c17\u0c3e \u0c24\u0c3f\u0c02\u0c21\u0c3f.',
+            '\ud83e\uddd8 \u0c12\u0c24\u0c4d\u0c24\u0c3f\u0c21\u0c3f \u0c24\u0c17\u0c4d\u0c17\u0c3f\u0c02\u0c1a\u0c21\u0c3e\u0c28\u0c3f\u0c15\u0c3f \u0c27\u0c4d\u0c2f\u0c3e\u0c28\u0c02 \u0c1a\u0c47\u0c2f\u0c02\u0c21\u0c3f.'
+          ];
+        }
         setTips(processedTips);
         setLoading(false);
       })
       .catch((err) => {
         console.error("Health tips error:", err);
-        setTips([]);
+        setTips([
+          '\ud83d\udca7 \u0c30\u0c4b\u0c1c\u0c41\u0c15\u0c41 8-10 \u0c17\u0c4d\u0c32\u0c3e\u0c38\u0c41\u0c32 \u0c28\u0c40\u0c30\u0c41 \u0c24\u0c3e\u0c17\u0c02\u0c21\u0c3f.',
+          '\ud83d\udeb6 \u0c2a\u0c4d\u0c30\u0c24\u0c3f\u0c30\u0c4b\u0c1c\u0c41 30 \u0c28\u0c3f\u0c2e\u0c3f\u0c37\u0c3e\u0c32 \u0c28\u0c21\u0c15.',
+          '\ud83d\ude34 7-8 \u0c17\u0c02\u0c1f\u0c32 \u0c28\u0c3f\u0c26\u0c4d\u0c30 \u0c2a\u0c21\u0c41\u0c15\u0c4b\u0c02\u0c21\u0c3f.'
+        ]);
         setLoading(false);
       });
   }, []);
