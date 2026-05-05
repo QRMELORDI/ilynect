@@ -1,0 +1,306 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { useSettings } from '../contexts/SettingsContext';
+import { getHistory } from '../services/api';
+
+const FLOWERS = ['🌸','🌹','🌻','🌺','🌷','🌼','💐','🌿','🍀','🌾'];
+
+export default function ProfilePage() {
+  const { user, logout, toggleTheme, theme, updateName } = useAuth();
+  const { language, toggleLanguage } = useSettings();
+  const [stats, setStats] = useState({ views: 0, uploads: 0, chats: 0 });
+  const [history, setHistory] = useState([]);
+  const [editing, setEditing] = useState(false);
+  const [newName, setNewName] = useState(user?.name || user?.displayName || '');
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user?.uid) {
+      getHistory(user.uid).then(setHistory).catch(() => {});
+    }
+  }, [user?.uid]);
+
+  const handleSaveName = async () => {
+    if (newName.trim() && newName !== user?.name) {
+      await updateName(user.uid, newName.trim());
+    }
+    setEditing(false);
+  };
+
+  const handleLogout = () => {
+    if (confirm('Are you sure you want to logout?')) {
+      logout();
+    }
+  };
+
+  const flower = FLOWERS[user?.avatar_index || 0] || '🌸';
+  const isAdmin = user?.role === 'admin' || user?.email === 'aviindo863@gmail.com';
+
+  return (
+    <div className="page-wrapper" style={{ background: 'var(--bg-primary)' }}>
+      <div className="container" style={{ maxWidth: 500, paddingTop: 20 }}>
+        
+        <div style={{ textAlign: 'center', marginBottom: 30 }}>
+          <div 
+            className="profile-avatar profile-avatar-lg animate-bounce-in"
+            style={{ 
+              margin: '0 auto 16px',
+              background: `linear-gradient(135deg, ${user?.avatar_color || '#7B2FFF'}, var(--moody-mauve))`,
+              boxShadow: '0 15px 40px rgba(123, 47, 255, 0.35)'
+            }}
+          >
+            {flower}
+          </div>
+          
+          {editing ? (
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'center', alignItems: 'center' }}>
+              <input
+                className="input"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                style={{ maxWidth: 200, textAlign: 'center' }}
+                autoFocus
+              />
+              <button className="btn btn-primary" onClick={handleSaveName} style={{ padding: '12px 20px' }}>
+                SAVE
+              </button>
+            </div>
+          ) : (
+            <div>
+              <div style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                {user?.name || user?.displayName || 'Family Member'}
+                <button 
+                  onClick={() => setEditing(true)}
+                  style={{ background: 'none', border: 'none', padding: 4, cursor: 'pointer', color: 'var(--text-muted)' }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          )}
+          
+          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+            {user?.email}
+          </div>
+          
+          {isAdmin && (
+            <div style={{ 
+              marginTop: 12, 
+              display: 'inline-flex', 
+              alignItems: 'center', 
+              gap: 6,
+              background: 'linear-gradient(135deg, var(--royal-purple), var(--moody-mauve))',
+              padding: '6px 14px',
+              borderRadius: 20,
+              fontSize: '0.7rem',
+              fontWeight: 800,
+              color: '#fff'
+            }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
+              </svg>
+              ADMIN
+            </div>
+          )}
+        </div>
+
+        <div className="glass-elevated" style={{ marginBottom: 24, padding: 0, overflow: 'hidden' }}>
+          <div style={{ display: 'flex', padding: 16 }}>
+            <div style={{ flex: 1, textAlign: 'center' }}>
+              <div style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--royal-purple)' }}>
+                {history.length}
+              </div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: 0.5 }}>
+                ACTIVITY
+              </div>
+            </div>
+            <div style={{ width: 1, background: 'var(--border-glass)' }} />
+            <div style={{ flex: 1, textAlign: 'center' }}>
+              <div style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--mint)' }}>
+                {user?.avatar_index + 1 || 1}
+              </div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: 0.5 }}>
+                MEMBER
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 24 }}>
+          <h2 style={{ fontSize: '0.85rem', fontWeight: 800, marginBottom: 12, letterSpacing: 1, color: 'var(--text-muted)' }}>
+            SETTINGS
+          </h2>
+          
+          <div className="glass" style={{ padding: 0, overflow: 'hidden' }}>
+            <div 
+              className="list-item"
+              onClick={toggleTheme}
+              style={{ borderBottom: '1px solid var(--border-glass)' }}
+            >
+              <div style={{ 
+                width: 36, height: 36, borderRadius: 10, 
+                background: theme === 'dark' ? 'linear-gradient(135deg, #3D5A80, #1a1a2e)' : 'linear-gradient(135deg, #FFD700, #FFF8DC)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill={theme === 'dark' ? '#fff' : '#000'}>
+                  {theme === 'dark' ? (
+                    <path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/>
+                  ) : (
+                    <path d="M6.76 4.84l-1.14-1.14 1.41 1.41L8.17 6.25l-1.41-1.41zM4 10.5H1v2h3v-2zm9-9h-2v3h2V1zm7.14 3.64l1.41-1.41 1.41 1.41-1.41 1.41-1.41-1.41zM20 10.5v2h3v-2h-3zm-8-5c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm-1 16h2v-2h-2v2z"/>
+                  )}
+                </svg>
+              </div>
+              <div className="list-item-content">
+                <div className="list-item-title">Dark Mode</div>
+                <div className="list-item-sub">{theme === 'dark' ? 'Currently dark' : 'Currently light'}</div>
+              </div>
+              <div style={{
+                width: 44,
+                height: 24,
+                borderRadius: 12,
+                background: theme === 'dark' ? 'var(--royal-purple)' : 'var(--bg-card)',
+                position: 'relative',
+                transition: 'all 0.3s'
+              }}>
+                <div style={{
+                  position: 'absolute',
+                  top: 2,
+                  left: theme === 'dark' ? 22 : 2,
+                  width: 20,
+                  height: 20,
+                  borderRadius: '50%',
+                  background: '#fff',
+                  transition: 'all 0.3s'
+                }} />
+              </div>
+            </div>
+            
+            <div className="list-item" onClick={() => navigate('/history')}>
+              <div style={{ 
+                width: 36, height: 36, borderRadius: 10, 
+                background: 'linear-gradient(135deg, #4CC9F0, #5AC8FA)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="#000">
+                  <path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 17.9 10.51 19 13 19c4.97 0 9-4.03 9-9s-4.03-9-9-9z"/>
+                </svg>
+              </div>
+              <div className="list-item-content">
+                <div className="list-item-title">Watch History</div>
+                <div className="list-item-sub">View your activity</div>
+              </div>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--text-muted)">
+                <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+              </svg>
+            </div>
+            
+            <div className="list-item" onClick={() => navigate('/downloads')}>
+              <div style={{ 
+                width: 36, height: 36, borderRadius: 10, 
+                background: 'linear-gradient(135deg, #30D158, #34C759)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="#000">
+                  <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v3h14v-3H5z"/>
+                </svg>
+              </div>
+              <div className="list-item-content">
+                <div className="list-item-title">Downloads</div>
+                <div className="list-item-sub">Manage offline content</div>
+              </div>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--text-muted)">
+                <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 24 }}>
+          <h2 style={{ fontSize: '0.85rem', fontWeight: 800, marginBottom: 12, letterSpacing: 1, color: 'var(--text-muted)' }}>
+            QUICK ACTIONS
+          </h2>
+          
+          <div className="glass" style={{ padding: 0, overflow: 'hidden' }}>
+            <div className="list-item" onClick={() => navigate('/gossips')} style={{ borderBottom: '1px solid var(--border-glass)' }}>
+              <div style={{ 
+                width: 36, height: 36, borderRadius: 10, 
+                background: 'linear-gradient(135deg, #E53170, #FF6B6B)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}>
+                <span style={{ fontSize: '1.2rem' }}>🎬</span>
+              </div>
+              <div className="list-item-content">
+                <div className="list-item-title">Watch Reels</div>
+                <div className="list-item-sub">Short family videos</div>
+              </div>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--text-muted)">
+                <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+              </svg>
+            </div>
+            
+            <div className="list-item" onClick={() => navigate('/education')} style={{ borderBottom: '1px solid var(--border-glass)' }}>
+              <div style={{ 
+                width: 36, height: 36, borderRadius: 10, 
+                background: 'linear-gradient(135deg, #FFD700, #FF9F1C)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}>
+                <span style={{ fontSize: '1.2rem' }}>📚</span>
+              </div>
+              <div className="list-item-content">
+                <div className="list-item-title">Education</div>
+                <div className="list-item-sub">GK, puzzles & more</div>
+              </div>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--text-muted)">
+                <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+              </svg>
+            </div>
+            
+            <div className="list-item" onClick={() => navigate('/health')}>
+              <div style={{ 
+                width: 36, height: 36, borderRadius: 10, 
+                background: 'linear-gradient(135deg, #06D6A0, #30D158)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}>
+                <span style={{ fontSize: '1.2rem' }}>💚</span>
+              </div>
+              <div className="list-item-content">
+                <div className="list-item-title">Health Tips</div>
+                <div className="list-item-sub">Stay healthy together</div>
+              </div>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--text-muted)">
+                <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <button 
+          className="btn btn-primary"
+          onClick={handleLogout}
+          style={{ 
+            width: '100%', 
+            background: 'var(--primary-pink)',
+            marginBottom: 40
+          }}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+          </svg>
+          LOGOUT
+        </button>
+
+        <div style={{ textAlign: 'center', marginBottom: 40 }}>
+          <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800, letterSpacing: 1, marginBottom: 4 }}>
+            ILYNECT FAMILY CONNECT
+          </div>
+          <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+            Made with ♥ in Prayagraj
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

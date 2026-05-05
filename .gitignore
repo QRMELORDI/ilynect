@@ -1,0 +1,55 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+backend/node_modules/
+functions/node_modules/
+
+# Build outputs
+frontend/dist/
+frontend/android/app/build/
+app-debug.apk
+
+# Database & uploads (not tracked in git)
+backend/data/
+backend/uploads/
+backend/*.sqlite
+
+# Environment files
+.env
+.env.local
+.env.production
+*.env
+
+# Firebase credentials (removed, but safety)
+*.json
+!package.json
+!capacitor.config.json
+!firebase.json
+!render.yaml
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+firebase-debug.log
+
+# Memory & docs
+memory/
+skills/
+MUST_READ.txt
+persistence_memory.md
+UPDATE_GUIDE.md
+zrok_output.txt
+
+# Service account files
+*-firebase-adminsdk-*.json
