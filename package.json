@@ -1,5 +1,9 @@
 {
-  "dependencies": {
-    "mongodb": "^7.2.0"
-  }
+  "name": "ilynect",
+  "version": "2.0.0",
+  "description": "ILYNECT - Family Connect App",
+  "engines": {
+    "node": "20.x"
+  },
+  "private": true
 }
