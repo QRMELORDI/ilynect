@@ -1,6 +1,19 @@
 # 🧠 ILYNECT - Persistence Memory
-**Last Updated**: May 7, 2026  
-**Version**: 3.0.0 (Premium Family Edition - Firebase Free, Render Deployed, Real-Time Chat)
+**Last Updated**: May 7, 2026 (Render Live)  
+**Version**: 3.0.0 (Premium Family Edition - Firebase Free, Render Deployed, Real-Time Chat)  
+
+---
+
+## 🟢 Current Live Status
+| Component | Status | URL/Location |
+|-----------|--------|---------------|
+| **GitHub Repo** | ✅ Live | https://github.com/QRMELORDI/ilynect.git |
+| **Backend (Render)** | ✅ Live | https://ilynect-2.onrender.com |
+| **API Base** | ✅ Live | https://ilynect-2.onrender.com/api |
+| **Health Check** | ✅ Live | https://ilynect-2.onrender.com/api/health |
+| **Database** | ✅ Initialized | better-sqlite3 (SQLite) |
+| **Node.js Version** | ✅ 20.20.2 | As configured in Render |
+**Status**: ✅ LIVE at https://ilynect-2.onrender.com
 
 ---
 
@@ -10,7 +23,7 @@
 |-----------|-------------|-------|
 | **Frontend** | React 19 + Vite + Capacitor | iOS-style premium UI, PWA ready |
 | **Backend** | Express.js + SQLite | Local file storage, no cloud dependencies |
-| **Database** | SQLite3 | Lightweight, file-based, zero config |
+| **Database** | better-sqlite3 | Synchronous, cross-platform prebuilds, no GLIBC issues |
 | **Real-Time** | Socket.io | Instant chat between Prayagraj & Nellore |
 | **Deployment** | Render.com (Backend) | Free tier, public URL |
 | **AI** | Groq API | Free tier, health/education assistant |
@@ -46,6 +59,10 @@
 - ✅ Created `render.yaml` for one-click deployment
 - ✅ Backend configured for free tier (ephemeral storage)
 - ✅ Environment variables configured (GROQ_API_KEY, JWT_SECRET)
+- ✅ Node.js 20.x enforced via `.nvmrc` (required for better-sqlite3 prebuilds)
+- ✅ Deployed successfully: **https://ilynect-2.onrender.com**
+- ✅ Port: 3001
+- ✅ Commit: `99039b4` — switched from `sqlite3` to `better-sqlite3` to fix GLIBC_2.38 error
 
 ---
 
@@ -67,20 +84,14 @@
    git push -u origin main
    ```
 
-### **Step 2: Render Backend Deployment**
-1. Sign up at [render.com](https://render.com) (use GitHub login)
-2. New → Web Service → Connect GitHub repo
-3. Configure:
-   - **Name**: `ilynect-backend`
-   - **Root Directory**: `.`
-   - **Build Command**: `cd backend && npm install`
-   - **Start Command**: `cd backend && node server.js`
-   - **Plan**: Free
-4. Add Environment Variables:
-   - `GROQ_API_KEY`: Your Groq API key
-   - `ADMIN_EMAIL`: `aviindo863@gmail.com`
-   - `JWT_SECRET`: (auto-generated)
-5. Deploy → Get public URL (e.g., `https://ilynect-backend.onrender.com`)
+### **Step 2: Render Backend Deployment (✅ COMPLETED)**
+- **Live URL**: `https://ilynect-2.onrender.com`
+- **API Base**: `https://ilynect-2.onrender.com/api`
+- **Root Directory**: `.`
+- **Build Command**: `cd backend && npm install --production`
+- **Start Command**: `cd backend && node server.js`
+- **Node Version**: 20.20.2 (via `.nvmrc`)
+- **Database**: `better-sqlite3` (no native rebuild needed)
 
 ### **Step 3: Frontend Deployment (Vercel)**
 1. Sign up at [vercel.com](https://vercel.com) (GitHub login)
@@ -89,7 +100,7 @@
    - **Root Directory**: `frontend`
    - **Build Command**: `npm run build`
    - **Output Directory**: `dist`
-   - **Environment Variable**: `VITE_API_URL` = `https://ilynect-backend.onrender.com/api`
+   - **Environment Variable**: `VITE_API_URL` = `https://ilynect-2.onrender.com/api`
 4. Deploy
 
 ### **Step 4: Android App Build**
@@ -124,10 +135,19 @@
 ## 📝 6. Important File Paths
 - **Backend**: `backend/server.js` (main entry)
 - **Frontend**: `frontend/src/` (React code)
-- **Database**: `backend/data/onv_player.db` (SQLite file)
+- **Database**: `backend/data/onv_player.db` (better-sqlite3)
 - **Uploads**: `backend/uploads/` (videos/photos/thumbnails)
 - **Config**: `frontend/src/apiConfig.js` (API endpoints)
+- **Database Module**: `backend/db/database.js` (better-sqlite3 wrapper)
+
+## 📝 7. API Configuration (Update After Deploy)
+Update `frontend/src/apiConfig.js` with:
+```javascript
+export const RENDER_API_URL = 'https://ilynect-2.onrender.com/api';
+```
+Then rebuild frontend: `cd frontend && npm run build`, copy `dist` to `backend/dist`, commit & push.
 
 ---
 
-*Memory Updated: May 7, 2026 - Ready for Production*
+*Memory Updated: May 7, 2026 - Backend LIVE at https://ilynect-2.onrender.com*
+*Next: Update frontend apiConfig.js → build → deploy to Vercel → build Android APK*
