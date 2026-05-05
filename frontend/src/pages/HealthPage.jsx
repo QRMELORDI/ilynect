@@ -4,85 +4,79 @@ import { askAI } from '../services/aiService';
 import { useSettings } from '../contexts/SettingsContext';
 
 const HEALTH_ICONS = ['💧', '🏃', '🍎', '😴', '🧘', '🥗', '☀️', '🫁', '🦷', '💪'];
+const FALLBACK_TIPS = [
+  '💧 రోజుకు 8-10 గ్లాసుల నీరు తాగండి.',
+  '🚶 ప్రతిరోజు 30 నిమిషాలు నడక.',
+  '😴 7-8 గంటల నిద్ర పడుకోండి.',
+  '🍎 పండ్లు, కూరగాయలు ఎక్కువగా తిండి.',
+  '🧘 ఒత్తిడి తగ్గించడానికి ధ్యానం చేయండి.'
+];
 
 export default function HealthPage() {
   const { t } = useSettings();
-  const [tips, setTips] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [tips, setTips] = useState(FALLBACK_TIPS);
+  const [loading, setLoading] = useState(false);
   const [question, setQuestion] = useState('');
   const [aiResponse, setAiResponse] = useState(null);
   const [isAsking, setIsAsking] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
   const chatEndRef = useRef(null);
+  const mountedRef = useRef(true);
 
   useEffect(() => {
+    mountedRef.current = true;
     getDailyContent('health')
       .then(data => {
+        if (!mountedRef.current) return;
         let processedTips = [];
-        if (Array.isArray(data)) {
+        if (Array.isArray(data) && data.length > 0) {
           processedTips = data;
-        } else if (typeof data === 'string' && data) {
+        } else if (typeof data === 'string' && data.length > 3) {
           processedTips = [data];
-        } else if (data && data.fact) {
+        } else if (data?.fact) {
           processedTips = [data.fact];
-        } else if (data && Array.isArray(data.tips)) {
+        } else if (Array.isArray(data?.tips) && data.tips.length > 0) {
           processedTips = data.tips;
         }
-        if (processedTips.length === 0 && data) {
-          const keys = Object.keys(data);
-          for (const key of keys) {
-            if (typeof data[key] === 'string' && data[key].length > 5) {
-              processedTips.push(data[key]);
-            } else if (Array.isArray(data[key])) {
-              processedTips.push(...data[key]);
-            }
-          }
-        }
-        if (processedTips.length === 0) {
-          processedTips = [
-            '\ud83d\udca7 \u0c30\u0c4b\u0c1c\u0c41\u0c15\u0c41 8-10 \u0c17\u0c4d\u0c32\u0c3e\u0c38\u0c41\u0c32 \u0c28\u0c40\u0c30\u0c41 \u0c24\u0c3e\u0c17\u0c02\u0c21\u0c3f.',
-            '\ud83d\udeb6 \u0c2a\u0c4d\u0c30\u0c24\u0c3f\u0c30\u0c4b\u0c1c\u0c41 30 \u0c28\u0c3f\u0c2e\u0c3f\u0c37\u0c3e\u0c32 \u0c28\u0c21\u0c15.',
-            '\ud83d\ude34 7-8 \u0c17\u0c02\u0c1f\u0c32 \u0c28\u0c3f\u0c26\u0c4d\u0c30 \u0c2a\u0c21\u0c41\u0c15\u0c4b\u0c02\u0c21\u0c3f.',
-            '\ud83c\udf4e \u0c2a\u0c02\u0c21\u0c4d\u0c32\u0c41, \u0c15\u0c42\u0c30\u0c17\u0c3e\u0c2f\u0c32\u0c41 \u0c0e\u0c15\u0c4d\u0c15\u0c41\u0c35\u0c17\u0c3e \u0c24\u0c3f\u0c02\u0c21\u0c3f.',
-            '\ud83e\uddd8 \u0c12\u0c24\u0c4d\u0c24\u0c3f\u0c21\u0c3f \u0c24\u0c17\u0c4d\u0c17\u0c3f\u0c02\u0c1a\u0c21\u0c3e\u0c28\u0c3f\u0c15\u0c3f \u0c27\u0c4d\u0c2f\u0c3e\u0c28\u0c02 \u0c1a\u0c47\u0c2f\u0c02\u0c21\u0c3f.'
-          ];
-        }
-        setTips(processedTips);
+        if (processedTips.length > 0) setTips(processedTips);
         setLoading(false);
       })
       .catch((err) => {
         console.error("Health tips error:", err);
-        setTips([
-          '\ud83d\udca7 \u0c30\u0c4b\u0c1c\u0c41\u0c15\u0c41 8-10 \u0c17\u0c4d\u0c32\u0c3e\u0c38\u0c41\u0c32 \u0c28\u0c40\u0c30\u0c41 \u0c24\u0c3e\u0c17\u0c02\u0c21\u0c3f.',
-          '\ud83d\udeb6 \u0c2a\u0c4d\u0c30\u0c24\u0c3f\u0c30\u0c4b\u0c1c\u0c41 30 \u0c28\u0c3f\u0c2e\u0c3f\u0c37\u0c3e\u0c32 \u0c28\u0c21\u0c15.',
-          '\ud83d\ude34 7-8 \u0c17\u0c02\u0c1f\u0c32 \u0c28\u0c3f\u0c26\u0c4d\u0c30 \u0c2a\u0c21\u0c41\u0c15\u0c4b\u0c02\u0c21\u0c3f.'
-        ]);
-        setLoading(false);
+      })
+      .finally(() => {
+        if (mountedRef.current) setLoading(false);
       });
+
+    return () => { mountedRef.current = false; };
   }, []);
 
   const handleAskAI = async (e) => {
     e.preventDefault();
-    if (!question.trim()) return;
-    
+    if (!question.trim() || aiLoading) return;
+    const q = question.trim();
     setIsAsking(true);
+    setAiLoading(true);
     setAiResponse(null);
     try {
-      const result = await askAI(question, 'health');
-      setAiResponse(result);
-      setQuestion('');
+      const result = await Promise.race([
+        askAI(q, 'health'),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('AI timed out')), 15000))
+      ]);
+      if (mountedRef.current) {
+        setAiResponse(result);
+        setQuestion('');
+      }
     } catch (err) {
       console.error(err);
-      setAiResponse({ text: "Sorry, I'm having trouble connecting to the AI right now." });
+      if (mountedRef.current) {
+        setAiResponse({ text: "AI ప్రస్తుతం అందుబాటులో లేదు. దయచేసి తర్వాత ప్రయత్నించండి." });
+      }
     }
     setIsAsking(false);
+    setAiLoading(false);
     setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
   };
-
-  if (loading) return (
-    <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div className="spinner" />
-    </div>
-  );
 
   return (
     <div className="page-wrapper" style={{ background: 'linear-gradient(180deg, var(--bg-primary) 0%, #0d1a15 100%)', paddingBottom: 100 }}>
@@ -109,7 +103,7 @@ export default function HealthPage() {
               onChange={e => setQuestion(e.target.value)}
               style={{ borderRadius: '14px', background: 'rgba(0,0,0,0.2)' }}
             />
-            <button className="btn btn-primary" style={{ padding: '0 20px', borderRadius: '14px', background: 'var(--mint)', color: '#000' }} disabled={isAsking}>
+            <button className="btn btn-primary" style={{ padding: '0 20px', borderRadius: '14px', background: 'var(--mint)', color: '#000' }} disabled={isAsking || !question.trim()}>
               {isAsking ? '...' : 'ASK'}
             </button>
           </form>
@@ -127,33 +121,25 @@ export default function HealthPage() {
           <div ref={chatEndRef} />
         </div>
 
-        {tips.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-state-icon">💚</div>
-            <div className="empty-state-title">హెల్త్ టిప్స్ లోడ్ కాలేదు</div>
-            <div className="empty-state-desc">దయచేసి తర్వాత ప్రయత్నించండి.</div>
-          </div>
-        ) : (
-          tips.map((tip, index) => (
-            <div
-              key={index}
-              className="health-card"
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
-              <div style={{ fontSize: '1.8rem', flexShrink: 0 }}>
-                {HEALTH_ICONS[index % HEALTH_ICONS.length]}
+        {tips.map((tip, index) => (
+          <div
+            key={index}
+            className="health-card"
+            style={{ animationDelay: `${index * 0.1}s` }}
+          >
+            <div style={{ fontSize: '1.8rem', flexShrink: 0 }}>
+              {HEALTH_ICONS[index % HEALTH_ICONS.length]}
+            </div>
+            <div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--mint)', fontWeight: 700, marginBottom: 4 }}>
+                టిప్ #{index + 1}
               </div>
-              <div>
-                <div style={{ fontSize: '0.7rem', color: 'var(--mint)', fontWeight: 700, marginBottom: 4 }}>
-                  టిప్ #{index + 1}
-                </div>
-                <div className="health-card-text">
-                  {typeof tip === 'string' ? tip.replace(/^[\d💧🏃🍎😴🧘🥗☀️\s.]+/, '') : tip}
-                </div>
+              <div className="health-card-text">
+                {typeof tip === 'string' ? tip.replace(/^[\d💧🏃🍎😴🧘🥗☀️\s.]+/, '') : tip}
               </div>
             </div>
-          ))
-        )}
+          </div>
+        ))}
 
         <div className="card" style={{ marginTop: 28, padding: 20, borderLeft: '3px solid var(--mint)' }}>
           <div style={{ color: 'var(--mint)', fontWeight: 700, fontSize: '0.85rem', marginBottom: 8 }}>💡 ప్రో టిప్</div>
