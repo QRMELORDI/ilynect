@@ -1,26 +1,43 @@
 import { API_BASE_URL, ENDPOINTS } from '../apiConfig';
+import { io } from 'socket.io-client';
 
-let POLL_INTERVAL = 3000;
-let pollTimer = null;
-let pollCallback = null;
-let chatPageVisible = false;
+let socket = null;
+let chatCallback = null;
 
 export const startChatPoll = (callback) => {
-  pollCallback = callback;
-  chatPageVisible = true;
+  chatCallback = callback;
+  
+  if (!socket) {
+    const socketUrl = API_BASE_URL.replace('/api', '');
+    socket = io(socketUrl, {
+      transports: ['websocket'],
+      auth: { token: localStorage.getItem('ilynect_token') }
+    });
+
+    socket.on('connect', () => {
+      console.log('Socket connected');
+    });
+
+    socket.on('new-message', (message) => {
+      if (chatCallback) {
+        fetchMessages().then(messages => chatCallback(messages));
+      }
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Socket disconnected');
+    });
+  }
+
   fetchMessages().then(messages => callback(messages));
-  pollTimer = setInterval(async () => {
-    if (chatPageVisible && pollCallback) {
-      const messages = await fetchMessages();
-      pollCallback(messages);
-    }
-  }, POLL_INTERVAL);
 };
 
 export const stopChatPoll = () => {
-  chatPageVisible = false;
-  if (pollTimer) clearInterval(pollTimer);
-  pollTimer = null;
+  chatCallback = null;
+  if (socket) {
+    socket.disconnect();
+    socket = null;
+  }
 };
 
 export const fetchWithAuth = async (url, options = {}) => {

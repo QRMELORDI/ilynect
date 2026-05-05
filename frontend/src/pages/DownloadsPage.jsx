@@ -25,33 +25,66 @@ export default function DownloadsPage() {
     })();
   }, []);
 
-  const handleDownload = async (video) => {
+const handleDownload = async (video) => {
     const entry = { video, progress: 0, status: 'downloading' };
     setQueue(q => {
       const next = [entry, ...q.filter(x => x.video.id !== video.id)];
-      localStorage.setItem('ilynect_download_queue', JSON.stringify(next));
+      localStorage.setItem('onv_download_queue', JSON.stringify(next));
       return next;
     });
-    await recordDownload(video.id, user?.uid, user?.name || user?.displayName);
-    
-    const url = video.downloadUrl || video.streamUrl;
-    if (url) {
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = video.title || 'video.mp4';
-      a.target = '_blank';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    }
-    
-    setTimeout(() => {
+    await recordDownload(video.id, user?.id, user?.name);
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', video.downloadUrl);
+    const token = localStorage.getItem('ilynect_token');
+    if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+    xhr.responseType = 'blob';
+
+    xhr.onprogress = (e) => {
+      if (e.lengthComputable) {
+        const progress = Math.round((e.loaded / e.total) * 100);
+        setQueue(q => {
+          const next = q.map(x => x.video.id === video.id ? { ...x, progress } : x);
+          localStorage.setItem('onv_download_queue', JSON.stringify(next));
+          return next;
+        });
+      }
+    };
+
+    xhr.onload = () => {
+      if (xhr.status === 200) {
+        const blob = xhr.response;
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = video.original_name || video.title || 'download';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        setQueue(q => {
+          const next = q.map(x => x.video.id === video.id ? { ...x, progress: 100, status: 'done' } : x);
+          localStorage.setItem('onv_download_queue', JSON.stringify(next));
+          return next;
+        });
+      } else {
+        setQueue(q => {
+          const next = q.map(x => x.video.id === video.id ? { ...x, status: 'error' } : x);
+          localStorage.setItem('onv_download_queue', JSON.stringify(next));
+          return next;
+        });
+      }
+    };
+
+    xhr.onerror = () => {
       setQueue(q => {
-        const next = q.map(x => x.video.id === video.id ? { ...x, progress: 100, status: 'done' } : x);
-        localStorage.setItem('ilynect_download_queue', JSON.stringify(next));
+        const next = q.map(x => x.video.id === video.id ? { ...x, status: 'error' } : x);
+        localStorage.setItem('onv_download_queue', JSON.stringify(next));
         return next;
       });
-    }, 2000);
+    };
+
+    xhr.send();
   };
 
   const removeFromQueue = (id) => {
