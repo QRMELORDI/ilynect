@@ -1,7 +1,7 @@
 # 🧠 ILYNECT - Family Memory
 
-**Last Updated**: May 7, 2026  
-**Version**: 3.0.1 (Family Friendly - Warm & Premium)
+**Last Updated**: May 7, 2026 (3:00 PM IST)  
+**Version**: 3.1.0 (All Issues Fixed - Theme, Delete, Chat, Blank Pages, Mobile Hang)
 
 ---
 
@@ -150,7 +150,7 @@ All stored safely on cloud server!
 
 ---
 
-## 🎨 New Design (v3.0.1)
+## 🎨 New Design (v3.1.0)
 
 Now featuring:
 - Warm, family-friendly colors (coral, green, gold)
@@ -158,6 +158,21 @@ Now featuring:
 - Glass effect cards
 - Easy navigation
 - Download buttons everywhere
+
+## 🔧 Fixes Applied (v3.1.0)
+1. **Theme toggle**: Fixed ProfilePage to use SettingsContext instead of AuthContext
+2. **Chat input box**: Fixed height from `100dvh` to `calc(100dvh - 60px)` so input is visible
+3. **Uploader delete**: Videos/reels/photos can now be deleted by their uploader OR admin
+4. **Blank health/education pages**: Added fallback content when Groq API fails
+5. **Mobile hang on back**: Changed `window.history.back()` to `navigate(-1)` in Capacitor
+6. **Groq API timeout**: Added 10s timeout to prevent hanging requests
+7. **Daily content fallback**: Static Telugu/English content when AI generation fails
+8. **60s fetch timeout**: Login and API calls now wait up to 60s for Render wake-up
+
+## ⚠️ Important: Groq API Key
+- GROQ_API_KEY must be set in Render Dashboard → Environment Variables
+- Without it, health/education pages show static fallback content (still works!)
+- Get free key at: https://console.groq.com/keys
 
 ---
 
