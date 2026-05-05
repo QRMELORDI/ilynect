@@ -15,8 +15,8 @@ export default function LoginPage() {
     try {
       await login(email, name);
     } catch (err) {
-      console.error('Login Error:', err);
-      alert(language === 'te' ? 'లాగిన్ విఫలమైంది. దయచేసి ఇంటర్నెట్ కనెక్షన్ చెక్ చేయండి.' : 'Login failed. Please check your connection.');
+      console.error('Login Error:', err.message);
+      alert(err.message || (language === 'te' ? 'లాగిన్ విఫలమైంది. దయచేసి ఇంటర్నెట్ కనెక్షన్ చెక్ చేయండి.' : 'Login failed. Please check your connection.'));
     }
     setLoading(false);
   };
@@ -26,8 +26,8 @@ export default function LoginPage() {
     try {
       await login('aviindo863@gmail.com', 'Akshit');
     } catch (err) {
-      console.error('Admin Login Error:', err);
-      alert(language === 'te' ? 'లాగిన్ విఫలమైంది.' : 'Admin Login failed.');
+      console.error('Admin Login Error:', err.message);
+      alert(err.message || (language === 'te' ? 'లాగిన్ విఫలమైంది.' : 'Admin Login failed.'));
     }
     setLoading(false);
   };

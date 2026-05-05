@@ -47,12 +47,21 @@ export const fetchWithAuth = async (url, options = {}) => {
     ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
     ...options.headers,
   };
-  const response = await fetch(url, { ...options, headers });
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Server error' }));
-    throw new Error(error.error || 'Request failed');
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 60000);
+  try {
+    const response = await fetch(url, { ...options, headers, signal: controller.signal });
+    clearTimeout(timeoutId);
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Server error' }));
+      throw new Error(error.error || 'Request failed');
+    }
+    return response.json();
+  } catch (err) {
+    clearTimeout(timeoutId);
+    if (err.name === 'AbortError') throw new Error('Connection timed out. Render is waking up, try again in 30 seconds.');
+    throw err;
   }
-  return response.json();
 };
 
 // AUTH
