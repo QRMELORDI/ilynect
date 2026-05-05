@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "518435438037",
+    "project_id": "onv-player-493f1",
+    "storage_bucket": "onv-player-493f1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:518435438037:android:16674bbdd238504618115c",
+        "android_client_info": {
+          "package_name": "com.akshit.onv_player"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAi56cgJKvp3vwqbB2jGfEHgEX3P-GQbkM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:518435438037:android:5b555b93c032219118115c",
+        "android_client_info": {
+          "package_name": "com.ilynect.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAi56cgJKvp3vwqbB2jGfEHgEX3P-GQbkM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

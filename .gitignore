@@ -5,8 +5,9 @@ backend/node_modules/
 functions/node_modules/
 
 # Build outputs
-frontend/dist/
+!frontend/dist/
 frontend/android/app/build/
+!frontend/android/app/build/outputs/apk/
 app-debug.apk
 
 # Database & uploads (not tracked in git)
@@ -21,11 +22,8 @@ backend/*.sqlite
 *.env
 
 # Firebase credentials (removed, but safety)
-*.json
-!package.json
-!capacitor.config.json
-!firebase.json
-!render.yaml
+!google-services.json
+!*-firebase-adminsdk-*.json
 
 # OS files
 .DS_Store

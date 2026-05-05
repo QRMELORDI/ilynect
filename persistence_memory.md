@@ -11,6 +11,9 @@
 | **Backend (Render)** | ✅ Live | https://ilynect-2.onrender.com |
 | **API Base** | ✅ Live | https://ilynect-2.onrender.com/api |
 | **Health Check** | ✅ Live | https://ilynect-2.onrender.com/api/health |
+| **Frontend (Vercel)** | ✅ Live | https://ilynect.vercel.app |
+| **Frontend (Preview)** | ✅ Live | https://ilynect-git-master-qrmelordis-projects.vercel.app |
+| **Frontend (Latest)** | ✅ Live | https://ilynect-ifuslfbgz-qrmelordis-projects.vercel.app |
 | **Database** | ✅ Initialized | better-sqlite3 (SQLite) |
 | **Node.js Version** | ✅ 20.20.2 | As configured in Render |
 **Status**: ✅ LIVE at https://ilynect-2.onrender.com
@@ -93,15 +96,21 @@
 - **Node Version**: 20.20.2 (via `.nvmrc`)
 - **Database**: `better-sqlite3` (no native rebuild needed)
 
-### **Step 3: Frontend Deployment (Vercel)**
-1. Sign up at [vercel.com](https://vercel.com) (GitHub login)
-2. New Project → Import `ILYNECT` repo
-3. Configure:
+### **Step 3: Frontend Deployment (Vercel) ✅ COMPLETED**
+**Live URLs**:
+- **Production**: https://ilynect.vercel.app
+- **Preview (Master)**: https://ilynect-git-master-qrmelordis-projects.vercel.app
+- **Latest Deploy**: https://ilynect-ifuslfbgz-qrmelordis-projects.vercel.app
+
+**Configuration Used**:
+1. Signed up at [vercel.com](https://vercel.com) (GitHub login)
+2. New Project → Import `QRMELORDI/ilynect` repo
+3. Configured:
    - **Root Directory**: `frontend`
    - **Build Command**: `npm run build`
    - **Output Directory**: `dist`
    - **Environment Variable**: `VITE_API_URL` = `https://ilynect-2.onrender.com/api`
-4. Deploy
+4. Deployed successfully using Vercel CLI: `npx plugins add vercel/vercel-plugin`
 
 ### **Step 4: Android App Build**
 1. Build frontend: `cd frontend && npm run build`
