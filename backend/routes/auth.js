@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db/database');
 const { randomUUID } = require('crypto');
+const { generateToken } = require('../middleware/auth');
 
 const FLOWER_AVATARS = ['🌸', '🌹', '🌻', '🌺', '🌷', '🌼', '💐', '🌿', '🍀', '🌾'];
 
