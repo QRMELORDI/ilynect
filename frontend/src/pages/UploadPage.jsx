@@ -88,11 +88,7 @@ export default function UploadPage() {
       }
     } catch (err) {
       console.error('Upload Error Details:', err);
-      let errorMsg = `Upload failed: ${err.message || 'Check connection'}.`;
-      if (type === 'movie' || type === 'reels') {
-        errorMsg += " NOTE: For large movies (over 10MB), please COMPRESS them first using tools like HandBrake (Resolution: 720p, RF: 24) to reduce size to ~300MB, then upload. This ensures smooth playback for everyone!";
-      }
-      setError(errorMsg);
+      setError(`Upload failed: ${err.message || 'Check connection'}.`);
     }
 
     setIsUploading(false);

@@ -264,3 +264,7 @@ JAVA_HOME: C:\Program Files\Android\Android Studio\jbr
 
 *Built by Akshit (Navy) for the KRGN family*  
 *Zero Firebase, Zero Google Drive, Zero paid services*
+
+### UptimeRobot Status Page
+**URL**: https://stats.uptimerobot.com/RwdMEFtOlW
+(Keep backend awake 24/7)
