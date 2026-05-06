@@ -12,6 +12,15 @@ export default function HomePage() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Try to load from cache first for instant UI
+    const cachedStats = localStorage.getItem('ily_stats');
+    const cachedFact = localStorage.getItem('ily_daily_fact');
+    const cachedHealth = localStorage.getItem('ily_health_tip');
+    
+    if (cachedStats) setStats(JSON.parse(cachedStats));
+    if (cachedFact) setDailyFact(cachedFact);
+    if (cachedHealth) setHealthTip(cachedHealth);
+
     loadStats();
     loadDailyPreview();
   }, []);
@@ -22,21 +31,31 @@ export default function HomePage() {
         getVideos().catch(() => ({ videos: [] })),
         getPhotos().catch(() => ({ photos: [] }))
       ]);
-      setStats({
-        videos: (vData.videos || []).length,
-        photos: (pData.photos || []).length
-      });
-    } catch {}
+      const newStats = {
+        videos: (vData.videos || vData || []).length,
+        photos: (pData.photos || pData || []).length
+      };
+      setStats(newStats);
+      localStorage.setItem('ily_stats', JSON.stringify(newStats));
+    } catch (e) {
+      console.error("Stats load error:", e);
+    }
   };
 
   const loadDailyPreview = async () => {
     try {
       const edu = await getDailyContent('education');
-      if (edu && edu.fact) setDailyFact(edu.fact);
+      if (edu && edu.fact) {
+        setDailyFact(edu.fact);
+        localStorage.setItem('ily_daily_fact', edu.fact);
+      }
     } catch {}
     try {
       const health = await getDailyContent('health');
-      if (health && health.fact) setHealthTip(health.fact);
+      if (health && health.fact) {
+        setHealthTip(health.fact);
+        localStorage.setItem('ily_health_tip', health.fact);
+      }
     } catch {}
     setLoading(false);
   };
@@ -89,7 +108,7 @@ export default function HomePage() {
             background: 'linear-gradient(135deg, rgba(10, 132, 255, 0.08), rgba(191, 90, 242, 0.04))'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-              <div style={{ 
+              <div className="wave-hand" style={{ 
                 width: 58, 
                 height: 58, 
                 borderRadius: '50%', 

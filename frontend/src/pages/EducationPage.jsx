@@ -15,9 +15,9 @@ export default function EducationPage() {
   useEffect(() => {
     async function load() {
       try {
-        const data = await getDailyContent();
+        const data = await getDailyContent('education');
         const fallback = {
-          date: new Date().toISOString().split('T')[0],
+          date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
           education: { fact: data?.fact || 'Science: Honey never spoils. 3000-year-old honey found in Egyptian tombs was still edible.' },
           brain_twister: data?.brain_puzzle || data?.quiz || 'What has keys but cant open locks? (Answer: A piano)',
           gk: data?.gk || 'Who wrote the Indian National Anthem? Rabindranath Tagore.',
@@ -26,23 +26,29 @@ export default function EducationPage() {
           maths_puzzle: data?.math_puzzle || 'I am an odd number. Take away one letter and I become even. (Answer: Seven)',
           thought: data?.thought || 'Success is not final, failure is not fatal: it is the courage to continue.',
           joke: data?.joke || '\u0c1f\u0c40\u0c1a\u0c30\u0c4d: \u0c28\u0c40\u0c15\u0c41 \u0c0f\u0c02 \u0c15\u0c3e\u0c35\u0c3e\u0c32\u0c3f? \u0c38\u0c4d\u0c1f\u0c42\u0c21\u0c46\u0c02\u0c1f\u0c4d: \u0c38\u0c46\u0c32\u0c35\u0c41\u0c32\u0c41 \u0c2e\u0c3e\u0c24\u0c4d\u0c30\u0c2e\u0c47 \u0c38\u0c3e\u0c30\u0c4d!',
-          science: data?.fact || 'A day on Venus is longer than a year on Venus.'
+          science: data?.science_fact || data?.fact || 'A day on Venus is longer than a year on Venus.'
         };
         setContent(fallback);
+        localStorage.setItem('ily_cached_edu', JSON.stringify(fallback));
       } catch (err) {
         console.error('Education load error:', err);
-        setContent({
-          date: new Date().toISOString().split('T')[0],
-          education: { fact: 'Science: Honey never spoils.' },
-          brain_twister: 'What has keys but cant open locks? (Piano)',
-          gk: 'Who wrote Indian National Anthem? Rabindranath Tagore.',
-          neethivaakyam: '\u0c15\u0c37\u0c4d\u0c1f\u0c2a\u0c21\u0c3f\u0c24\u0c47 \u0c2b\u0c32\u0c3f\u0c24\u0c02 \u0c24\u0c2a\u0c4d\u0c2a\u0c15 \u0c35\u0c38\u0c4d\u0c24\u0c41\u0c02\u0c26\u0c3f.',
-          speciality: 'Today is a new opportunity!',
-          maths_puzzle: 'Odd number, remove one letter = even. (Seven)',
-          thought: 'Courage to continue is success.',
-          joke: '\u0c1f\u0c40\u0c1a\u0c30\u0c4d: \u0c28\u0c40\u0c15\u0c41 \u0c0f\u0c02 \u0c15\u0c3e\u0c35\u0c3e\u0c32\u0c3f?',
-          science: 'A day on Venus is longer than its year.'
-        });
+        const cached = localStorage.getItem('ily_cached_edu');
+        if (cached) {
+          setContent(JSON.parse(cached));
+        } else {
+          setContent({
+            date: new Date().toISOString().split('T')[0],
+            education: { fact: 'Science: Honey never spoils.' },
+            brain_twister: 'What has keys but cant open locks? (Piano)',
+            gk: 'Who wrote Indian National Anthem? Rabindranath Tagore.',
+            neethivaakyam: '\u0c15\u0c37\u0c4d\u0c1f\u0c2a\u0c21\u0c3f\u0c24\u0c47 \u0c2b\u0c32\u0c3f\u0c24\u0c02 \u0c24\u0c2a\u0c4d\u0c2a\u0c15 \u0c35\u0c38\u0c4d\u0c24\u0c41\u0c02\u0c26\u0c3f.',
+            speciality: 'Today is a new opportunity!',
+            maths_puzzle: 'Odd number, remove one letter = even. (Seven)',
+            thought: 'Courage to continue is success.',
+            joke: '\u0c1f\u0c40\u0c1a\u0c30\u0c4d: \u0c28\u0c40\u0c15\u0c41 \u0c0f\u0c02 \u0c15\u0c3e\u0c35\u0c3e\u0c32\u0c3f?',
+            science: 'A day on Venus is longer than its year.'
+          });
+        }
       }
       setLoading(false);
     }

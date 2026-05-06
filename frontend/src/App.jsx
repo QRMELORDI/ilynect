@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { App as CapacitorApp } from '@capacitor/app';
-import { Filesystem, Directory } from '@capacitor/filesystem';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { SettingsProvider, useSettings } from './contexts/SettingsContext';
 import Navbar from './components/Navbar';
@@ -42,17 +41,49 @@ const wakeUpBackend = async (retries = 3) => {
 
 function AppRoutes() {
   const { user, loading } = useAuth();
-  const { t } = useSettings();
   const navigate = useNavigate();
-  const location = useLocation();
   const [appReady, setAppReady] = useState(false);
 
   useEffect(() => {
-    // Wake up backend on app start
-    wakeUpBackend().then(awake => {
-      console.log(`Backend awake: ${awake}`);
-      setAppReady(true);
+    // Initial wakeup
+    wakeUpBackend().then(() => setAppReady(true));
+
+    // Handle Hardware Back Button
+    const backListener = CapacitorApp.addListener('backButton', ({ canGoBack }) => {
+      if (!canGoBack || window.location.pathname === '/') {
+        CapApp.exitApp();
+      } else {
+        window.history.back();
+      }
     });
+
+    // Auto-update check logic
+    const checkForUpdates = async () => {
+      try {
+        const data = await checkVersion();
+        if (data.version && data.version !== APP_VERSION) {
+          console.log(`New version available: ${data.version}, reloading...`);
+          window.location.reload(true);
+        }
+      } catch (e) {
+        console.warn('Update check failed:', e);
+      }
+    };
+
+    // Listen for app coming to foreground
+    const stateListener = CapacitorApp.addListener('appStateChange', ({ isActive }) => {
+      if (isActive) {
+        wakeUpBackend();
+        checkForUpdates();
+      }
+    });
+
+    checkForUpdates();
+
+    return () => {
+      backListener.remove();
+      stateListener.remove();
+    };
   }, []);
 
   useEffect(() => {
@@ -61,47 +92,11 @@ function AppRoutes() {
         setUserOnline(user.uid, user.displayName || user.name)
           .catch(err => console.error("Presence Error:", err));
       };
-      
       updateStatus();
-      // Keep presence updated every 30 seconds for better responsiveness
       const interval = setInterval(updateStatus, 30000);
       return () => clearInterval(interval);
     }
   }, [user]);
-
-  useEffect(() => {
-    const checkForUpdates = async () => {
-      try {
-        const data = await checkVersion();
-        if (data.version !== APP_VERSION) {
-          console.log(`New version available: ${data.version}, reloading...`);
-          // Auto-reload to get latest version from Vercel
-          window.location.reload(true);
-        }
-      } catch (e) {
-        console.log('Version check failed:', e.message);
-      }
-    };
-
-    const handleFocus = async () => {
-      checkForUpdates();
-    };
-
-    // Check on focus (when app comes to foreground)
-    window.addEventListener('focus', handleFocus);
-    // Also check via Capacitor app state change
-    const appStateListener = CapacitorApp.addListener('appStateChange', ({ isActive }) => {
-      if (isActive) checkForUpdates();
-    });
-
-    // Initial check
-    checkForUpdates();
-
-    return () => {
-      window.removeEventListener('focus', handleFocus);
-      appStateListener.remove();
-    };
-  }, []);
 
   if (loading) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)' }}>

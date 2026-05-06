@@ -25,6 +25,11 @@ export default function HealthPage() {
 
   useEffect(() => {
     mountedRef.current = true;
+    
+    // Load from cache first
+    const cached = localStorage.getItem('ily_cached_health');
+    if (cached) setTips(JSON.parse(cached));
+
     getDailyContent('health')
       .then(data => {
         if (!mountedRef.current) return;
@@ -38,8 +43,11 @@ export default function HealthPage() {
         } else if (Array.isArray(data?.tips) && data.tips.length > 0) {
           processedTips = data.tips;
         }
-        if (processedTips.length > 0) setTips(processedTips);
-        setLoading(false);
+        
+        if (processedTips.length > 0) {
+          setTips(processedTips);
+          localStorage.setItem('ily_cached_health', JSON.stringify(processedTips));
+        }
       })
       .catch((err) => {
         console.error("Health tips error:", err);
