@@ -36,11 +36,36 @@ export default function ProfilePage() {
 
   const flower = FLOWERS[user?.avatar_index || 0] || '🌸';
   const isAdmin = user?.role === 'admin' || user?.email === 'aviindo863@gmail.com';
+  const APP_VERSION = '1.0.5';
 
   return (
     <div className="page-wrapper" style={{ background: 'var(--bg-primary)', paddingBottom: 100 }}>
       <div className="container" style={{ maxWidth: 500, paddingTop: 20 }}>
         
+        {/* Version Badge - Visible for auto-update verification */}
+        <div style={{ 
+          textAlign: 'center', 
+          marginBottom: 10,
+          fontSize: '0.6rem',
+          color: 'var(--text-muted)',
+          fontWeight: 700,
+          letterSpacing: 1
+        }}>
+          VERSION 1.0.5 • ILYNECT PREMIUM
+          {isAdmin ? ' • ADMIN' : ''}
+        </div>
+        
+        {/* Auto-Update Status */}
+        <div style={{ 
+          textAlign: 'center', 
+          marginBottom: 20,
+          fontSize: '0.55rem',
+          color: 'var(--mint)',
+          fontWeight: 600
+        }}>
+          ✅ AUTO-UPDATE ENABLED • Backend wakes automatically
+        </div>
+
         <div style={{ textAlign: 'center', marginBottom: 30 }}>
           <div 
             className="profile-avatar profile-avatar-lg animate-bounce-in"

@@ -138,6 +138,8 @@ db.exec(schema);
 try { db.exec("ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'user'"); } catch {}
 try { db.exec("ALTER TABLE users ADD COLUMN avatar_index INTEGER DEFAULT 0"); } catch {}
 try { db.exec("ALTER TABLE videos ADD COLUMN thumbnail TEXT DEFAULT ''"); } catch {}
+try { db.exec("ALTER TABLE videos ADD COLUMN drive_file_id TEXT"); } catch {}
+try { db.exec("ALTER TABLE photos ADD COLUMN drive_file_id TEXT"); } catch {}
 
 console.log('✅ ILYNECT Database Initialized (better-sqlite3)');
 module.exports = db;
