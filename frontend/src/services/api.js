@@ -175,12 +175,56 @@ export const uploadVideo = async (uploadData, onProgress) => {
       }
     };
 
-    xhr.onerror = () => reject(new Error('Network error'));
+    xhr.onerror = () => reject(new Error('Network error. Check internet connection.'));
+    xhr.ontimeout = () => reject(new Error('Upload timed out. Render server may be sleeping - wait 30s and try again.'));
+    xhr.timeout = 120000;
     xhr.send(formData);
   });
 };
 
-export const uploadPhotos = uploadVideo;
+export const uploadPhotos = async (uploadData, onProgress) => {
+  const formData = new FormData();
+  const files = uploadData.files || (uploadData.file ? [uploadData.file] : []);
+  const title = uploadData.title || '';
+  const userId = uploadData.userId || '';
+  const userName = uploadData.userName || 'Anonymous';
+
+  files.forEach(f => formData.append('photos', f));
+  formData.append('title', title);
+  formData.append('userId', userId);
+  formData.append('userName', userName);
+
+  if (onProgress) onProgress(10);
+
+  return new Promise((resolve, reject) => {
+    const token = localStorage.getItem('ilynect_token');
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', ENDPOINTS.PHOTOS + '/upload');
+    if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable && onProgress) {
+        onProgress(Math.round((e.loaded / e.total) * 100));
+      }
+    };
+
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        const result = JSON.parse(xhr.response);
+        resolve(result.photos || result);
+      } else {
+        let errMsg = 'Upload failed';
+        try { errMsg = JSON.parse(xhr.response).error || errMsg; } catch {}
+        reject(new Error(errMsg));
+      }
+    };
+
+    xhr.onerror = () => reject(new Error('Network error. Check internet connection.'));
+    xhr.ontimeout = () => reject(new Error('Upload timed out. Render server may be sleeping - wait 30s and try again.'));
+    xhr.timeout = 120000;
+    xhr.send(formData);
+  });
+};
 
 export const deleteVideo = async (id) => {
   return fetchWithAuth(`${ENDPOINTS.VIDEOS}/${id}`, { method: 'DELETE' });

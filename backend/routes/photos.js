@@ -19,7 +19,7 @@ const photoStorage = multer.diskStorage({
 
 const upload = multer({
   storage: photoStorage,
-  limits: { fileSize: 100 * 1024 * 1024 },
+  limits: { fileSize: 50 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     if (/\.(jpg|jpeg|png|gif|webp|bmp|svg|heic)$/i.test(file.originalname)) cb(null, true);
     else cb(new Error('Only image files allowed'));
@@ -39,31 +39,34 @@ router.get('/', async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Server error' }); }
 });
 
-router.post('/upload', upload.array('photos', 20), async (req, res) => {
+router.post('/upload', upload.single('photos'), async (req, res) => {
   try {
-    if (!req.files || req.files.length === 0) return res.status(400).json({ error: 'No photos' });
+    if (!req.file) return res.status(400).json({ error: 'No photo file uploaded' });
     const { userId, userName, title } = req.body;
-    const uploaded = [];
-    for (const file of req.files) {
-      const id = uuidv4();
-      const t = title || file.originalname.replace(/\.[^/.]+$/, '');
+    const id = uuidv4();
+    const t = title || req.file.originalname.replace(/\.[^/.]+$/, '');
+
+    await db.runAsync(
+      `INSERT INTO photos (id, title, filename, original_name, size_bytes, mime_type, uploaded_by, uploader_name)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [id, t, req.file.filename, req.file.originalname, req.file.size, req.file.mimetype, userId || null, userName || 'Anonymous']
+    );
+
+    if (userId) {
       await db.runAsync(
-        `INSERT INTO photos (id, title, filename, original_name, size_bytes, mime_type, uploaded_by, uploader_name)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-        [id, t, file.filename, file.originalname, file.size, file.mimetype, userId || null, userName || 'Anonymous']
+        `INSERT INTO history (user_id, user_name, content_id, content_type, action, content_title) VALUES (?, ?, ?, 'photo', 'upload', ?)`,
+        [userId, userName, id, t]
       );
-      if (userId) {
-        await db.runAsync(
-          `INSERT INTO history (user_id, user_name, content_id, content_type, action, content_title) VALUES (?, ?, ?, 'photo', 'upload', ?)`,
-          [userId, userName, id, t]
-        );
-      }
-      uploaded.push(await db.getAsync('SELECT * FROM photos WHERE id = ?', [id]));
     }
-    res.json({ success: true, photos: uploaded });
+
+    const photo = await db.getAsync('SELECT * FROM photos WHERE id = ?', [id]);
+    res.json({ success: true, photos: [photo] });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
+    console.error('Photo upload error:', err);
+    if (req.file && fs.existsSync(path.join(__dirname, '..', 'uploads', 'photos', req.file.filename))) {
+      fs.unlinkSync(path.join(__dirname, '..', 'uploads', 'photos', req.file.filename));
+    }
+    res.status(500).json({ error: `Photo upload failed: ${err.message}` });
   }
 });
 

@@ -50,3 +50,5 @@ zrok_output.txt
 
 # Service account files
 *-firebase-adminsdk-*.json
+
+backend/service-account.json
