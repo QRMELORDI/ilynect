@@ -19,11 +19,12 @@ const PORT = process.env.PORT || 3001;
 const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'aviindo863@gmail.com').toLowerCase();
 
 app.use(cors({ origin: '*', credentials: true }));
+app.options('*', cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-['videos', 'photos', 'thumbnails'].forEach(dir => {
-  const p = path.join(__dirname, 'uploads', dir);
+['videos', 'photos', 'thumbnails', 'tmp'].forEach(dir => {
+  const p = path.join(__dirname, dir);
   if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true });
 });
 
