@@ -36,9 +36,9 @@ app.get('/api/wakeup', (req, res) => {
 
 // API Routes
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/movierulz', require('./routes/movierulz'));
 app.use('/api/videos', require('./routes/videos'));
 app.use('/api/photos', require('./routes/photos'));
-app.use('/api/chats', require('./routes/chats'));
 app.use('/api/content', require('./routes/content'));
 app.use('/api/daily', require('./routes/daily'));
 app.use('/api/files', require('./routes/files'));

@@ -9,6 +9,7 @@ functions/node_modules/
 frontend/android/app/build/
 !frontend/android/app/build/outputs/apk/
 app-debug.apk
+5MovieRulzApp.v.1.0.2(Latest).apk
 
 # Database & uploads (not tracked in git)
 backend/data/

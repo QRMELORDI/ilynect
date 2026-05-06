@@ -408,3 +408,21 @@ export const getWatchPosition = async (videoId) => {
     return 0;
   }
 };
+export const getMovieRulzMovies = async (page = 1, searchQuery = '') => {
+  const url = `${ENDPOINTS.MOVIERULZ}?page=${page}&s=${encodeURIComponent(searchQuery)}`;
+  return fetchWithAuth(url);
+};
+
+export const getMovieRulzDetails = async (movieUrl) => {
+  return fetchWithAuth(`${ENDPOINTS.MOVIERULZ}/details`, {
+    method: 'POST',
+    body: JSON.stringify({ url: movieUrl }),
+  });
+};
+
+export const updateMovieRulzConfig = async (domain) => {
+  return fetchWithAuth(`${ENDPOINTS.MOVIERULZ}/config`, {
+    method: 'POST',
+    body: JSON.stringify({ domain }),
+  });
+};

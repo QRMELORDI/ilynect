@@ -18,6 +18,7 @@ export const ENDPOINTS = {
   STREAM: (type, id) => `${API_BASE_URL}/files/stream/${type}/${id}`,
   DOWNLOAD: (type, id) => `${API_BASE_URL}/files/download/${type}/${id}`,
   PHOTO: (id) => `${API_BASE_URL}/files/photo/${id}`,
+  MOVIERULZ: `${API_BASE_URL}/movierulz`,
 };
 
 export default API_BASE_URL;

@@ -8,6 +8,7 @@ import BottomNav from './components/BottomNav';
 import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
 import VideosPage from './pages/VideosPage';
+import MovierulzPage from './pages/MovierulzPage';
 import GossipPage from './pages/GossipPage';
 import PhotosPage from './pages/PhotosPage';
 import UploadPage from './pages/UploadPage';
@@ -80,6 +81,7 @@ function AppRoutes() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/videos" element={<VideosPage />} />
+        <Route path="/movierulz" element={<MovierulzPage />} />
         <Route path="/gossips" element={<GossipPage />} />
         <Route path="/photos" element={<PhotosPage />} />
         <Route path="/upload" element={<UploadPage />} />
