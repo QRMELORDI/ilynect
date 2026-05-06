@@ -10,10 +10,6 @@ const db = require('./db/database');
 
 const app = express();
 const server = http.createServer(app);
-const { Server } = require('socket.io');
-const io = new Server(server, {
-  cors: { origin: '*', methods: ['GET', 'POST'] }
-});
 
 const PORT = process.env.PORT || 3001;
 const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'aviindo863@gmail.com').toLowerCase();
@@ -51,37 +47,7 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString(), version: '1.0.5' });
 });
 
-// Socket.io Real-Time Chat
-io.on('connection', (socket) => {
-  console.log('User connected:', socket.id);
-  
-  socket.on('send-message', async (data) => {
-    const { userId, userName, text } = data;
-    if (!userId || !text) return;
-    
-    const { v4: uuidv4 } = require('uuid');
-    const id = uuidv4();
-    
-    await db.runAsync(
-      'INSERT INTO chats (id, user_id, user_name, message) VALUES (?, ?, ?, ?)',
-      [id, userId, userName, text]
-    );
-    
-    const message = {
-      id,
-      user_id: userId,
-      user_name: userName,
-      message: text,
-      created_at: Math.floor(Date.now() / 1000)
-    };
-    
-    io.emit('new-message', message);
-  });
-  
-  socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
-  });
-});
+
 
 // Serve frontend static files (if exists)
 const frontDist = path.join(__dirname, 'dist');
