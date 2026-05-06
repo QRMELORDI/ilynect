@@ -3,33 +3,59 @@ const router = express.Router();
 const path = require('path');
 const fs = require('fs');
 const db = require('../db/database');
+const driveService = require('../services/driveService');
 
 const UPLOADS_BASE = path.join(__dirname, '..', 'uploads');
 
-// Helper: get file path by ID and type
-async function getFilePath(id, type) {
-  let row;
+async function getFileRecord(id, type) {
   if (type === 'photo') {
-    row = await db.getAsync('SELECT filename FROM photos WHERE id = ?', [id]);
-    return row ? path.join(UPLOADS_BASE, 'photos', row.filename) : null;
+    return db.getAsync('SELECT filename, original_name, mime_type, drive_file_id FROM photos WHERE id = ?', [id]);
   }
-  row = await db.getAsync('SELECT filename FROM videos WHERE id = ?', [id]);
-  return row ? path.join(UPLOADS_BASE, 'videos', row.filename) : null;
+  return db.getAsync('SELECT filename, original_name, mime_type, drive_file_id FROM videos WHERE id = ?', [id]);
 }
 
-// STREAM video online (supports Range requests for seek/scrub)
+function getLocalPath(id, type) {
+  const dir = type === 'photo' ? 'photos' : 'videos';
+  return path.join(UPLOADS_BASE, dir);
+}
+
 router.get('/stream/:type/:id', async (req, res) => {
   try {
     const { type, id } = req.params;
-    const filePath = await getFilePath(id, type);
-    if (!filePath || !fs.existsSync(filePath)) {
-      return res.status(404).json({ error: 'File not found' });
+    const record = await getFileRecord(id, type);
+    if (!record) return res.status(404).json({ error: 'File not found' });
+
+    if (record.drive_file_id) {
+      try {
+        const range = req.headers.range || null;
+        const { stream } = await driveService.getFileStream(record.drive_file_id, range);
+        res.setHeader('Content-Type', record.mime_type || 'application/octet-stream');
+        res.setHeader('Accept-Ranges', 'bytes');
+        if (range) {
+          const [start, end] = range.replace('bytes=', '').split('-').map(Number);
+          const headResp = await driveService.getFileInfo(record.drive_file_id);
+          const fileSize = parseInt(headResp.size);
+          const chunkSize = (end || fileSize - 1) - start + 1;
+          res.writeHead(206, {
+            'Content-Range': `bytes ${start}-${end || fileSize - 1}/${fileSize}`,
+            'Content-Length': chunkSize,
+            'Content-Type': record.mime_type || 'application/octet-stream',
+          });
+        }
+        stream.pipe(res);
+        return;
+      } catch (driveErr) {
+        console.error('Drive stream failed, falling back to local:', driveErr.message);
+      }
     }
 
-    const stat = fs.statSync(filePath);
+    const localPath = path.join(getLocalPath(id, type), record.filename);
+    if (!fs.existsSync(localPath)) return res.status(404).json({ error: 'File not found' });
+
+    const stat = fs.statSync(localPath);
     const fileSize = stat.size;
     const range = req.headers.range;
-    const ext = path.extname(filePath).toLowerCase();
+    const ext = path.extname(localPath).toLowerCase();
     const mimeTypes = {
       '.mp4': 'video/mp4', '.webm': 'video/webm', '.mkv': 'video/x-matroska',
       '.mov': 'video/quicktime', '.avi': 'video/x-msvideo', '.mp3': 'audio/mpeg',
@@ -43,7 +69,7 @@ router.get('/stream/:type/:id', async (req, res) => {
       const start = parseInt(parts[0], 10);
       const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
       const chunksize = end - start + 1;
-      const file = fs.createReadStream(filePath, { start, end });
+      const file = fs.createReadStream(localPath, { start, end });
       res.writeHead(206, {
         'Content-Range': `bytes ${start}-${end}/${fileSize}`,
         'Accept-Ranges': 'bytes',
@@ -56,7 +82,7 @@ router.get('/stream/:type/:id', async (req, res) => {
         'Content-Length': fileSize,
         'Content-Type': contentType,
       });
-      fs.createReadStream(filePath).pipe(res);
+      fs.createReadStream(localPath).pipe(res);
     }
   } catch (err) {
     console.error('Stream error:', err);
@@ -64,38 +90,57 @@ router.get('/stream/:type/:id', async (req, res) => {
   }
 });
 
-// DOWNLOAD file (forces Content-Disposition attachment)
 router.get('/download/:type/:id', async (req, res) => {
   try {
     const { type, id } = req.params;
-    const filePath = await getFilePath(id, type);
-    if (!filePath || !fs.existsSync(filePath)) {
-      return res.status(404).json({ error: 'File not found' });
-    }
+    const record = await getFileRecord(id, type);
+    if (!record) return res.status(404).json({ error: 'File not found' });
 
-    const originalName = type === 'photo'
-      ? (await db.getAsync('SELECT original_name FROM photos WHERE id = ?', [id]))?.original_name
-      : (await db.getAsync('SELECT original_name FROM videos WHERE id = ?', [id]))?.original_name;
-
-    const downloadName = originalName || path.basename(filePath);
+    const downloadName = record.original_name || record.filename;
     res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(downloadName)}"`);
     res.setHeader('Content-Type', 'application/octet-stream');
-    fs.createReadStream(filePath).pipe(res);
+
+    if (record.drive_file_id) {
+      try {
+        const { stream } = await driveService.getFileStream(record.drive_file_id);
+        stream.pipe(res);
+        return;
+      } catch (driveErr) {
+        console.error('Drive download failed, falling back to local:', driveErr.message);
+      }
+    }
+
+    const localPath = path.join(getLocalPath(id, type), record.filename);
+    if (!fs.existsSync(localPath)) return res.status(404).json({ error: 'File not found' });
+    fs.createReadStream(localPath).pipe(res);
   } catch (err) {
     console.error('Download error:', err);
     res.status(500).json({ error: 'Server error' });
   }
 });
 
-// Direct photo/image view
 router.get('/photo/:id', async (req, res) => {
   try {
-    const filePath = await getFilePath(req.params.id, 'photo');
-    if (!filePath || !fs.existsSync(filePath)) return res.status(404).json({ error: 'Not found' });
-    const ext = path.extname(filePath).toLowerCase();
+    const record = await getFileRecord(req.params.id, 'photo');
+    if (!record) return res.status(404).json({ error: 'Not found' });
+
+    if (record.drive_file_id) {
+      try {
+        const { stream } = await driveService.getFileStream(record.drive_file_id);
+        res.setHeader('Content-Type', record.mime_type || 'image/jpeg');
+        stream.pipe(res);
+        return;
+      } catch (driveErr) {
+        console.error('Drive photo stream failed, falling back to local:', driveErr.message);
+      }
+    }
+
+    const localPath = path.join(getLocalPath(req.params.id, 'photo'), record.filename);
+    if (!fs.existsSync(localPath)) return res.status(404).json({ error: 'Not found' });
+    const ext = path.extname(localPath).toLowerCase();
     const mimeTypes = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.gif': 'image/gif', '.webp': 'image/webp' };
     res.setHeader('Content-Type', mimeTypes[ext] || 'image/jpeg');
-    fs.createReadStream(filePath).pipe(res);
+    fs.createReadStream(localPath).pipe(res);
   } catch (err) {
     res.status(500).json({ error: 'Server error' });
   }

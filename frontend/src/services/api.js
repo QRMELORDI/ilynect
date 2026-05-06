@@ -1,5 +1,4 @@
 import { API_BASE_URL, ENDPOINTS } from '../apiConfig';
-import { io } from 'socket.io-client';
 
 export const getAPIBaseURL = () => API_BASE_URL;
 
@@ -30,54 +29,6 @@ export const wakeUpBackend = async (retries = 3) => {
   return false;
 };
 
-let socket = null;
-let chatCallback = null;
-
-export const startChatPoll = (callback) => {
-  chatCallback = callback;
-  
-  if (!socket) {
-    const socketUrl = API_BASE_URL.replace('/api', '');
-    console.log('Connecting to Socket.io:', socketUrl);
-    socket = io(socketUrl, {
-      transports: ['websocket', 'polling'],
-      auth: { token: localStorage.getItem('ilynect_token') },
-      reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000
-    });
-
-    socket.on('connect', () => {
-      console.log('Socket connected:', socket.id);
-    });
-
-    socket.on('new-message', (message) => {
-      console.log('New message received:', message);
-      if (chatCallback) {
-        fetchMessages().then(messages => chatCallback(messages));
-      }
-    });
-
-    socket.on('disconnect', () => {
-      console.log('Socket disconnected');
-    });
-
-    socket.on('connect_error', (err) => {
-      console.error('Socket connection error:', err.message);
-    });
-  }
-
-  fetchMessages().then(messages => callback(messages));
-};
-
-export const stopChatPoll = () => {
-  chatCallback = null;
-  if (socket) {
-    socket.disconnect();
-    socket = null;
-  }
-};
-
 export const fetchWithAuth = async (url, options = {}) => {
   // Wake up backend before EVERY request
   await wakeUpBackend();
@@ -102,54 +53,11 @@ export const fetchWithAuth = async (url, options = {}) => {
   }
 };
 
-export const fetchMessages = async () => {
-  try {
-    const messages = await fetchWithAuth(ENDPOINTS.CHATS);
-    return (messages || []).map(m => ({
-      ...m,
-      createdAt: { toDate: () => new Date(m.created_at * 1000) },
-    }));
-  } catch (err) {
-    console.error('Fetch messages error:', err);
-    return [];
-  }
-};
-
-export const sendMessage = async (userId, userName, text) => {
-  if (!text.trim()) throw new Error('Message cannot be empty');
-  
-  try {
-    // Use Socket.io for real-time if connected
-    if (socket && socket.connected) {
-      socket.emit('send-message', { userId, userName, text });
-      return { success: true };
-    }
-    
-    // Fallback to REST API
-    return await fetchWithAuth(ENDPOINTS.CHATS, {
-      method: 'POST',
-      body: JSON.stringify({ userId, userName, text }),
-    });
-  } catch (err) {
-    console.error('Send message error:', err);
-    throw err;
-  }
-};
-
-export const voteMessage = async (msgId, userId, type) => {
-  try {
-    return await fetchWithAuth(`${ENDPOINTS.VIDEOS}/${msgId}/interact`, {
-      method: 'POST',
-      body: JSON.stringify({ userId, type: type === 'up' ? 'like' : 'dislike' }),
-    });
-  } catch (err) {
-    console.error('Vote error:', err);
-    throw err;
-  }
-};
-
 export const interactVideo = async (videoId, userId, type) => {
-  return voteMessage(videoId, userId, type);
+  return await fetchWithAuth(`${ENDPOINTS.VIDEOS}/${videoId}/interact`, {
+    method: 'POST',
+    body: JSON.stringify({ userId, type: type === 'up' ? 'like' : 'dislike' }),
+  });
 };
 
 export const getVideos = async (params = {}) => {
@@ -263,8 +171,54 @@ export const uploadVideo = async (uploadData, onProgress) => {
   }
 };
 
-export const uploadPhotos = uploadVideo;
-export const uploadPhoto = uploadVideo;
+export const uploadPhotos = async (uploadData, onProgress) => {
+  try {
+    const formData = new FormData();
+    const file = uploadData.file;
+    const title = uploadData.title || '';
+    const userId = uploadData.userId || '';
+    const userName = uploadData.userName || 'Anonymous';
+    
+    formData.append('photos', file);
+    formData.append('title', title);
+    formData.append('userId', userId);
+    formData.append('userName', userName);
+    
+    if (onProgress) onProgress(10);
+    
+    return new Promise((resolve, reject) => {
+      const token = localStorage.getItem('ilynect_token');
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', ENDPOINTS.PHOTOS + '/upload');
+      if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+      
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable && onProgress) {
+          onProgress(Math.round((e.loaded / e.total) * 100));
+        }
+      };
+      
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          const result = JSON.parse(xhr.response);
+          if (onProgress) onProgress(100);
+          resolve(result.photos?.[0] || result);
+        } else {
+          const err = JSON.parse(xhr.response || '{}');
+          reject(new Error(err.error || 'Upload failed'));
+        }
+      };
+      
+      xhr.onerror = () => reject(new Error('Network error'));
+      xhr.send(formData);
+    });
+  } catch (err) {
+    console.error('Upload error:', err);
+    throw err;
+  }
+};
+
+export const uploadPhoto = uploadPhotos;
 
 export const recordDownload = async (id, userId, userName, type = 'video') => {
   try {

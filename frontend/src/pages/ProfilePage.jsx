@@ -9,7 +9,7 @@ const FLOWERS = ['🌸','🌹','🌻','🌺','🌷','🌼','💐','🌿','🍀',
 export default function ProfilePage() {
   const { user, logout, updateName } = useAuth();
   const { language, toggleLanguage, theme, toggleTheme } = useSettings();
-  const [stats, setStats] = useState({ views: 0, uploads: 0, chats: 0 });
+  const [stats, setStats] = useState({ views: 0, uploads: 0 });
   const [history, setHistory] = useState([]);
   const [editing, setEditing] = useState(false);
   const [newName, setNewName] = useState(user?.name || user?.displayName || '');
@@ -268,51 +268,17 @@ export default function ProfilePage() {
           </h2>
           
           <div className="glass" style={{ padding: 0, overflow: 'hidden' }}>
-            <div className="list-item" onClick={() => navigate('/gossips')} style={{ borderBottom: '1px solid var(--border-glass)' }}>
+            <div className="list-item" onClick={() => navigate('/gossips')}>
               <div style={{ 
                 width: 36, height: 36, borderRadius: 10, 
                 background: 'linear-gradient(135deg, #E53170, #FF6B6B)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center'
               }}>
-                <span style={{ fontSize: '1.2rem' }}>🎬</span>
+                <span style={{ fontSize: '1.2rem' }}>🎯</span>
               </div>
               <div className="list-item-content">
                 <div className="list-item-title">Watch Reels</div>
                 <div className="list-item-sub">Short family videos</div>
-              </div>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--text-muted)">
-                <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
-              </svg>
-            </div>
-            
-            <div className="list-item" onClick={() => navigate('/education')} style={{ borderBottom: '1px solid var(--border-glass)' }}>
-              <div style={{ 
-                width: 36, height: 36, borderRadius: 10, 
-                background: 'linear-gradient(135deg, #FFD700, #FF9F1C)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center'
-              }}>
-                <span style={{ fontSize: '1.2rem' }}>📚</span>
-              </div>
-              <div className="list-item-content">
-                <div className="list-item-title">Education</div>
-                <div className="list-item-sub">GK, puzzles & more</div>
-              </div>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--text-muted)">
-                <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
-              </svg>
-            </div>
-            
-            <div className="list-item" onClick={() => navigate('/health')}>
-              <div style={{ 
-                width: 36, height: 36, borderRadius: 10, 
-                background: 'linear-gradient(135deg, #06D6A0, #30D158)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center'
-              }}>
-                <span style={{ fontSize: '1.2rem' }}>💚</span>
-              </div>
-              <div className="list-item-content">
-                <div className="list-item-title">Health Tips</div>
-                <div className="list-item-sub">Stay healthy together</div>
               </div>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--text-muted)">
                 <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>

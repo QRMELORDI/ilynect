@@ -11,7 +11,6 @@ export const ENDPOINTS = {
   AUTH_GET_USER: (id) => `${API_BASE_URL}/auth/user/${id}`,
   VIDEOS: `${API_BASE_URL}/videos`,
   PHOTOS: `${API_BASE_URL}/photos`,
-  CHATS: `${API_BASE_URL}/chats`,
   PRESENCE: `${API_BASE_URL}/presence`,
   ONLINE_USERS: `${API_BASE_URL}/presence/online`,
   HISTORY: (userId) => `${API_BASE_URL}/history/${userId}`,

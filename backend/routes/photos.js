@@ -5,6 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const { randomUUID } = require('crypto');
 const db = require('../db/database');
+const driveService = require('../services/driveService');
 
 const photoStorage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -46,11 +47,35 @@ router.post('/upload', upload.single('photos'), async (req, res) => {
     const id = randomUUID();
     const t = title || req.file.originalname.replace(/\.[^/.]+$/, '');
 
+    let driveFileId = null;
+    try {
+      console.log('Uploading photo to Google Drive...');
+      const driveResult = await driveService.uploadFile(
+        req.file.path,
+        req.file.originalname,
+        req.file.mimetype,
+        'photo',
+        { uploaded_by: userId || 'anonymous', photo_id: id }
+      );
+      driveFileId = driveResult.id;
+      console.log(`Photo uploaded to Drive: ${driveFileId}`);
+    } catch (driveErr) {
+      console.error('Drive upload failed, falling back to local storage:', driveErr.message);
+    }
+
     await db.runAsync(
-      `INSERT INTO photos (id, title, filename, original_name, size_bytes, mime_type, uploaded_by, uploader_name)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [id, t, req.file.filename, req.file.originalname, req.file.size, req.file.mimetype, userId || null, userName || 'Anonymous']
+      `INSERT INTO photos (id, title, filename, original_name, size_bytes, mime_type, uploaded_by, uploader_name, drive_file_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [id, t, req.file.filename, req.file.originalname, req.file.size, req.file.mimetype, userId || null, userName || 'Anonymous', driveFileId]
     );
+
+    if (driveFileId) {
+      const localPath = path.join(__dirname, '..', 'uploads', 'photos', req.file.filename);
+      if (fs.existsSync(localPath)) {
+        fs.unlinkSync(localPath);
+        console.log('Local temp photo cleaned up');
+      }
+    }
 
     if (userId) {
       await db.runAsync(
@@ -90,6 +115,9 @@ router.delete('/:id', async (req, res) => {
   try {
     const photo = await db.getAsync('SELECT * FROM photos WHERE id = ?', [req.params.id]);
     if (!photo) return res.status(404).json({ error: 'Not found' });
+    if (photo.drive_file_id) {
+      try { await driveService.deleteFile(photo.drive_file_id); } catch (e) { console.error('Drive delete failed:', e.message); }
+    }
     const filePath = path.join(__dirname, '..', 'uploads', 'photos', photo.filename);
     if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
     await db.runAsync('DELETE FROM photos WHERE id = ?', [req.params.id]);

@@ -31,7 +31,6 @@ export default function HomePage() {
     { icon: '🎬', label: 'Movies', desc: `${stats.videos} Videos`, path: '/videos', gradient: 'linear-gradient(135deg, #FF375F, #FF6B6B)' },
     { icon: '📸', label: 'Photos', desc: `${stats.photos} Photos`, path: '/photos', gradient: 'linear-gradient(135deg, #64D2FF, #5AC8FA)' },
     { icon: '🎯', label: 'Reels', desc: `${stats.reels} Reels`, path: '/gossips', gradient: 'linear-gradient(135deg, #BF5AF2, #AF52DE)' },
-    { icon: '💬', label: 'Chat', desc: 'Family Chat', path: '/chats', gradient: 'linear-gradient(135deg, #30D158, #34C759)' },
   ];
 
   return (

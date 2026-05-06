@@ -75,26 +75,21 @@ export default function GossipPage() {
                    onPlay={() => recordView(reel.id)}
                  />
                 
-                {/* Actions */}
-                <div style={{ position: 'absolute', right: 15, bottom: 120, display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center', zIndex: 10 }}>
-                   <div onClick={() => handleInteract(reel.id, 'like')} style={{ textAlign: 'center', cursor: 'pointer' }}>
-                      <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                         <svg width="24" height="24" viewBox="0 0 24 24" fill="#fff"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.89C7.22 8.27 7 8.79 7 9.33v9.33c0 1.1.9 2 2 2h8c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91l-.01-.01L23 10z"/></svg>
-                      </div>
-                      <div style={{ fontSize: '0.7rem', color: '#fff', fontWeight: 800, marginTop: 4 }}>{reel.likes || 0}</div>
-                   </div>
-                   <div onClick={() => handleInteract(reel.id, 'dislike')} style={{ textAlign: 'center', cursor: 'pointer' }}>
-                      <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                         <svg width="24" height="24" viewBox="0 0 24 24" fill="#fff" style={{ transform: 'rotate(180deg)' }}><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.89C7.22 8.27 7 8.79 7 9.33v9.33c0 1.1.9 2 2 2h8c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91l-.01-.01L23 10z"/></svg>
-                      </div>
-                      <div style={{ fontSize: '0.7rem', color: '#fff', fontWeight: 800, marginTop: 4 }}>{reel.dislikes || 0}</div>
-                   </div>
-                   <div onClick={() => navigate('/chats')} style={{ textAlign: 'center', cursor: 'pointer' }}>
-                      <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                         <svg width="24" height="24" viewBox="0 0 24 24" fill="#fff"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
-                      </div>
-                   </div>
-                </div>
+                 {/* Actions */}
+                 <div style={{ position: 'absolute', right: 15, bottom: 120, display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center', zIndex: 10 }}>
+                    <div onClick={() => handleInteract(reel.id, 'like')} style={{ textAlign: 'center', cursor: 'pointer' }}>
+                       <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="#fff"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.89C7.22 8.27 7 8.79 7 9.33v9.33c0 1.1.9 2 2 2h8c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91l-.01-.01L23 10z"/></svg>
+                       </div>
+                       <div style={{ fontSize: '0.7rem', color: '#fff', fontWeight: 800, marginTop: 4 }}>{reel.likes || 0}</div>
+                    </div>
+                    <div onClick={() => handleInteract(reel.id, 'dislike')} style={{ textAlign: 'center', cursor: 'pointer' }}>
+                       <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="#fff" style={{ transform: 'rotate(180deg)' }}><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.89C7.22 8.27 7 8.79 7 9.33v9.33c0 1.1.9 2 2 2h8c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91l-.01-.01L23 10z"/></svg>
+                       </div>
+                       <div style={{ fontSize: '0.7rem', color: '#fff', fontWeight: 800, marginTop: 4 }}>{reel.dislikes || 0}</div>
+                    </div>
+                 </div>
 
                  {/* Info */}
                  <div style={{ position: 'absolute', left: 15, bottom: 80, zIndex: 10, maxWidth: '70%' }}>

@@ -14,7 +14,6 @@ import UploadPage from './pages/UploadPage';
 import HistoryPage from './pages/HistoryPage';
 import DownloadsPage from './pages/DownloadsPage';
 import ProfilePage from './pages/ProfilePage';
-import ChatPage from './pages/ChatPage';
 import { checkVersion, setUserOnline } from './services/api';
 import './index.css';
 
@@ -83,7 +82,6 @@ function AppRoutes() {
         <Route path="/videos" element={<VideosPage />} />
         <Route path="/gossips" element={<GossipPage />} />
         <Route path="/photos" element={<PhotosPage />} />
-        <Route path="/chats" element={<ChatPage />} />
         <Route path="/upload" element={<UploadPage />} />
         <Route path="/history" element={<HistoryPage />} />
         <Route path="/downloads" element={<DownloadsPage />} />
