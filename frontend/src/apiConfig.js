@@ -1,6 +1,6 @@
 const IS_PRODUCTION = import.meta.env.PROD;
 
-const RENDER_API_URL = import.meta.env.VITE_API_URL || "http://10.40.176.90:3001/api";
+const RENDER_API_URL = import.meta.env.VITE_API_URL || "https://ilynect-2.onrender.com/api";
 const LOCAL_API_URL = "http://10.40.176.90:3001/api";
 
 export const API_BASE_URL = IS_PRODUCTION ? RENDER_API_URL : LOCAL_API_URL;

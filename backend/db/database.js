@@ -124,13 +124,6 @@ const schema = `
     updated_at INTEGER DEFAULT (strftime('%s','now'))
   );
 
-  CREATE TABLE IF NOT EXISTS chats (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT NOT NULL,
-    user_name TEXT NOT NULL,
-    message TEXT NOT NULL,
-    created_at INTEGER DEFAULT (strftime('%s','now'))
-  );
 
   CREATE TABLE IF NOT EXISTS presence (
     user_id TEXT PRIMARY KEY,

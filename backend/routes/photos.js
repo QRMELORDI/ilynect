@@ -3,7 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID } = require('crypto');
 const db = require('../db/database');
 
 const photoStorage = multer.diskStorage({
@@ -13,7 +13,7 @@ const photoStorage = multer.diskStorage({
     cb(null, dir);
   },
   filename: (req, file, cb) => {
-    cb(null, `${uuidv4()}${path.extname(file.originalname)}`);
+    cb(null, `${randomUUID()}${path.extname(file.originalname)}`);
   }
 });
 
@@ -43,7 +43,7 @@ router.post('/upload', upload.single('photos'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No photo file uploaded' });
     const { userId, userName, title } = req.body;
-    const id = uuidv4();
+    const id = randomUUID();
     const t = title || req.file.originalname.replace(/\.[^/.]+$/, '');
 
     await db.runAsync(

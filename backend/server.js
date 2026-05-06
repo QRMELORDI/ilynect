@@ -40,8 +40,8 @@ app.post('/api/auth/login', async (req, res) => {
 
     let user = await db.getAsync('SELECT * FROM users WHERE email = ?', [cleanEmail]);
     if (!user) {
-      const { v4: uuidv4 } = require('uuid');
-      const id = uuidv4();
+      const { randomUUID } = require('crypto');
+      const id = randomUUID();
       const color = avatarColors[Math.floor(Math.random() * avatarColors.length)];
       const avatarIndex = Math.floor(Math.random() * avatars.length);
       await db.runAsync(
@@ -138,7 +138,7 @@ app.get('/api/history/:userId', async (req, res) => {
 });
 
 app.get('/api/version', (req, res) => {
-  res.json({ version: '2.1.0', update_required: false });
+  res.json({ version: '1.0.4', update_required: false });
 });
 
 app.post('/api/ai/ask', async (req, res) => {
@@ -218,10 +218,10 @@ io.on('connection', (socket) => {
     const { userId, userName, text } = data;
     if (!userId || !text) return;
     
-    const { v4: uuidv4 } = require('uuid');
-    const id = uuidv4();
+    const { randomUUID } = require('crypto');
+    const id = randomUUID();
     await db.runAsync(
-      'INSERT INTO chats (id, user_id, user_name, message) VALUES (?, ?, ?, ?)',
+      'INSERT INTO messages (id, sender_id, sender_name, text) VALUES (?, ?, ?, ?)',
       [id, userId, userName, text]
     );
     

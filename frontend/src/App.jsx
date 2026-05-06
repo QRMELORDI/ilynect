@@ -20,7 +20,7 @@ import ProfilePage from './pages/ProfilePage';
 import { checkVersion, setUserOnline } from './services/api';
 import './index.css';
 
-const APP_VERSION = '1.0.3';
+const APP_VERSION = '1.0.4';
 
 function AppRoutes() {
   const { user, loading } = useAuth();

@@ -571,7 +571,7 @@ body {
   background: var(--apple-bg-secondary);
   border-radius: var(--radius-xl);
   width: 92%;
-  maxWidth: 400px;
+  max-width: 400px;
   animation: apple-bounce-in 0.4s var(--ease-bounce);
   border: 1px solid var(--apple-border-light);
   box-shadow: var(--shadow-lg);

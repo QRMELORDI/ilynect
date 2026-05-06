@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db/database');
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID } = require('crypto');
 
 const FLOWER_AVATARS = ['🌸', '🌹', '🌻', '🌺', '🌷', '🌼', '💐', '🌿', '🍀', '🌾'];
 
@@ -16,7 +16,7 @@ router.post('/login', async (req, res) => {
 
     let user = await db.getAsync('SELECT * FROM users WHERE email = ?', [cleanEmail]);
     if (!user) {
-      const id = uuidv4();
+      const id = randomUUID();
       const color = avatarColors[Math.floor(Math.random() * avatarColors.length)];
       const avatarIndex = Math.floor(Math.random() * FLOWER_AVATARS.length);
       await db.runAsync(

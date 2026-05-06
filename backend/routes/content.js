@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db/database');
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID } = require('crypto');
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY || '';
 
@@ -18,7 +18,7 @@ router.get('/daily', async (req, res) => {
       const seeded = await fetchContentFromGroq(type);
       await db.runAsync(
         'INSERT OR REPLACE INTO daily_content (id, type, content_json, active_date) VALUES (?, ?, ?, ?)', 
-        [uuidv4(), type, JSON.stringify(seeded), today]
+        [randomUUID(), type, JSON.stringify(seeded), today]
       );
       content = await db.getAsync(
         'SELECT * FROM daily_content WHERE type = ? AND active_date = ?', [type, today]

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db/database');
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID } = require('crypto');
 
 router.get('/', async (req, res) => {
   try {
@@ -14,7 +14,7 @@ router.post('/', async (req, res) => {
   try {
     const { userId, userName, text } = req.body;
     if (!text) return res.status(400).json({ error: 'Text required' });
-    const id = uuidv4();
+    const id = randomUUID();
     await db.runAsync('INSERT INTO messages (id, sender_id, sender_name, text) VALUES (?, ?, ?, ?)', [id, userId, userName, text]);
     const msg = await db.getAsync('SELECT * FROM messages WHERE id = ?', [id]);
     res.json(msg);

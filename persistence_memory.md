@@ -1,7 +1,7 @@
 # 🧠 ILYNECT - Persistence Memory
 
 **Last Updated**: May 7, 2026 (4:00 PM IST)  
-**Version**: 3.1.0 (All Issues Fixed)  
+**Version**: 3.1.1 (Fixed: Login error, chat unification, and storage cleanup)  
 **Status**: ✅ LIVE  
 **Backend**: https://ilynect-2.onrender.com  
 **Frontend**: https://ilynect.vercel.app  
@@ -263,7 +263,14 @@ JAVA_HOME: C:\Program Files\Android\Android Studio\jbr
 ---
 
 *Built by Akshit (Navy) for the KRGN family*  
-*Zero Firebase, Zero Google Drive, Zero paid services*
+---
+
+### 🟢 1.0.4: Final Stability Update
+1.  **Login Fix**: Replaced ESM-only `uuid` with Node's native `crypto.randomUUID()`. This was the cause of the "Server error" during login.
+2.  **Storage Fix**: Migrated `videos.js` back to local filesystem storage from Google Drive to ensure 100% self-reliance.
+3.  **Chat Unification**: Unified `chats` and `messages` tables into a single `messages` table. Socket.io and REST API now share the same source of truth.
+4.  **UI Polish**: Fixed `maxWidth` CSS warning and set production API URL to `https://ilynect-2.onrender.com`.
+5.  **Automatic Updates**: App now correctly checks for version `1.0.4` and handles cold-starts with better timeout messaging.
 
 ### UptimeRobot Status Page
 **URL**: https://stats.uptimerobot.com/RwdMEFtOlW
