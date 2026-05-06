@@ -1,342 +1,305 @@
-# 🎬 ILYNECT - Premium Family Connect App
+# ILYNECT - Premium Family Connect App
 
-**Built for our family. Designed with love. Deployed for free.**
+<div align="center">
 
-[![Live Frontend](https://img.shields.io/badge/Live-Vercel-000000?style=for-the-badge)](https://ilynect.vercel.app)
-[![Live Backend](https://img.shields.io/badge/Live-Render-46e3b4?style=for-the-badge)](https://ilynect-2.onrender.com)
-[![GitHub](https://img.shields.io/badge/GitHub-QRMELORDI/ilynect-181717?style=for-the-badge&logo=github)](https://github.com/QRMELORDI/ilynect)
+**Version:** 1.1.0 | **Platform:** Android + Web | **Status:** ✅ Production Ready
 
----
+A beautiful, premium iOS-style family media sharing app with Google Drive cloud storage.
 
-## 🌟 Live URLs
+[Features](#-features) • [Architecture](#-architecture) • [Setup](#-setup) • [API](#-api-reference) • [Deployment](#-deployment)
 
-| Service | URL | Status |
-|---------|-----|--------|
-| **Frontend (Vercel)** | https://ilynect.vercel.app | ✅ Live |
-| **Backend API (Render)** | https://ilynect-2.onrender.com/api | ✅ Live |
-| **Health Check** | https://ilynect-2.onrender.com/api/health | ✅ Live |
-| **GitHub Repository** | https://github.com/QRMELORDI/ilynect | ✅ Live |
+</div>
 
 ---
 
-## 🏗️ Tech Stack
+## 📱 Overview
 
-| Component | Technology | Purpose |
-|-----------|-------------|---------|
-| **Frontend** | React 19 + Vite + Capacitor | iOS-style premium UI, PWA, Android app |
-| **Backend** | Express.js + better-sqlite3 | RESTful API, local file storage |
-| **Database** | SQLite (better-sqlite3) | Lightweight, zero-config, cross-platform |
-| **Real-Time** | Socket.io | Instant chat between Prayagraj & Nellore |
-| **AI Assistant** | Groq API (free tier) | Health & Education assistant |
-| **Deployment** | Vercel (Frontend) + Render (Backend) | 100% free, public URLs |
+ILYNECT is a family media sharing application that lets your family upload, watch, and share Movies, Reels, and Photos. Built with a premium iOS-inspired UI, it runs entirely on free services:
 
----
+- **Backend:** Node.js + Express on Render (free tier)
+- **Database:** SQLite (embedded, no separate server)
+- **Storage:** Google Drive (via Service Account)
+- **Frontend:** React + Vite + Capacitor (Android APK)
+
+**Zero Firebase, zero paid services, zero monthly costs.**
 
 ## ✨ Features
 
-### 💬 Real-Time Family Chat
-- Instant messaging with Socket.io
-- Online presence tracking
-- Like/dislike messages
-- Tree-avatar system (10 unique avatars)
+### Media Management
+- 🎬 **Movies** - Admin-only upload, categorized viewing
+- 📸 **Photos** - Family photo gallery with cloud storage
+- 🎯 **Reels** - Short-form vertical video feed (TikTok-style)
+- ☁️ **Google Drive Storage** - All media stored in Drive folders
+- 📥 **Download** - Save content to device
+- 🔄 **Auto-wake Backend** - Render free tier sleeps, app wakes it automatically
 
-### 🎥 Movies & Reels
-- Upload and stream videos locally
-- Admin-only movie uploads (`aviindo863@gmail.com`)
-- Reels (under 60 seconds) with camera capture
-- Progress tracking for uploads
-- Range request support for video seeking
+### User Experience
+- 🎨 **Premium iOS UI** - Glassmorphism, smooth animations, dark/light mode
+- 👋 **Waving Hand Greeting** - Personalized welcome on home screen
+- 📱 **Android Back Button** - Proper navigation (doesn't exit app)
+- 🌐 **Bilingual** - English + Telugu translations
+- 🔒 **Auth System** - Token-based authentication with SQLite users
 
-### 📸 Photos Gallery
-- Upload and browse family photos
-- Add to gallery from camera or gallery
-- Download photos directly to device
-- Lightbox view with zoom
+### Removed Features
+- ❌ Chat (replaced by direct sharing)
+- ❌ Health section
+- ❌ Education section
 
-### 📥 Downloads
-- Download videos/photos for offline viewing
-- Progress tracking with XHR
-- Download queue management
-- Direct file download (no Drive dependencies)
+## 🏗️ Architecture
 
-### 📚 Daily Knowledge
-- Health tips (Telugu + English)
-- Education facts & puzzles
-- GK questions, Telugu jokes, Neethivaakyam
-- Cached daily for performance
+```
+ILYNECT/
+├── backend/                    # Node.js Express API
+│   ├── server.js              # Main server + Socket.io (legacy)
+│   ├── db/database.js         # SQLite schema + migrations
+│   ├── services/
+│   │   └── driveService.js    # Google Drive API integration
+│   ├── routes/
+│   │   ├── auth.js            # Login, register, user management
+│   │   ├── videos.js          # Video upload, list, stream, delete
+│   │   ├── photos.js          # Photo upload, list, delete
+│   │   ├── files.js           # Stream/download/photo endpoints
+│   │   ├── presence.js        # Online user tracking
+│   │   ├── history.js         # User activity history
+│   │   └── version.js         # App version checking
+│   └── dist/                  # Frontend production build
+│
+├── frontend/                   # React + Vite + Capacitor
+│   ├── src/
+│   │   ├── App.jsx            # Routing + Capacitor back button
+│   │   ├── apiConfig.js       # API endpoints configuration
+│   │   ├── services/
+│   │   │   ├── api.js         # All API calls (upload, fetch, etc.)
+│   │   │   └── translations.js # EN/TE translations
+│   │   ├── contexts/
+│   │   │   ├── AuthContext.jsx    # User authentication state
+│   │   │   └── SettingsContext.jsx # Theme + language state
+│   │   ├── pages/
+│   │   │   ├── HomePage.jsx       # Welcome + quick access cards
+│   │   │   ├── VideosPage.jsx     # Movies browser
+│   │   │   ├── PhotosPage.jsx     # Photo gallery
+│   │   │   ├── GossipPage.jsx     # Reels (vertical feed)
+│   │   │   ├── UploadPage.jsx     # Upload form
+│   │   │   ├── HistoryPage.jsx    # User activity
+│   │   │   ├── DownloadsPage.jsx  # Downloaded content
+│   │   │   ├── ProfilePage.jsx    # User profile + settings
+│   │   │   └── LoginPage.jsx      # Auth screen
+│   │   └── components/
+│   │       ├── Navbar.jsx         # Top navigation
+│   │       └── BottomNav.jsx      # Floating bottom nav
+│   └── android/               # Capacitor Android project
+│       └── app/build/outputs/apk/debug/app-debug.apk
+```
 
-### 🤖 AI Assistant (Groq API)
-- Health advice in Telugu-English mix
-- Education assistance
-- Smart fallback responses when API is unavailable
-
-### 🎨 Premium UI
-- iOS-style glassmorphism design
-- Dynamic theming (Light/Dark mode)
-- Smooth animations (Outfit font)
-- Royal purple wave branding
-- Responsive for all screen sizes
-
----
-
-## 🚀 Quick Start (Local Development)
+## 🚀 Setup
 
 ### Prerequisites
 - Node.js 18+
-- Git
-- (Optional) Android Studio for APK build
+- Java JDK 17+ (for Android builds)
+- Android Studio (for APK builds)
 
-### 1. Clone & Install
+### Backend Setup
+
 ```bash
-git clone https://github.com/QRMELORDI/ilynect.git
-cd ilynect
+cd backend
+npm install
 
-# Install backend dependencies
-cd backend && npm install
-
-# Install frontend dependencies
-cd ../frontend && npm install
-```
-
-### 2. Environment Setup
-Create `backend/.env`:
-```env
+# Create .env file:
 PORT=3001
-ADMIN_EMAIL=aviindo863@gmail.com
-JWT_SECRET=your-secret-key-here
-GROQ_API_KEY=your-groq-api-key
+GOOGLE_SERVICE_ACCOUNT={"type":"service_account",...}  # Full JSON
+ADMIN_EMAIL=your-admin@email.com
+
+npm start
 ```
 
-### 3. Run Development Servers
-```bash
-# Terminal 1: Backend
-cd backend && npm run dev
+### Google Drive Setup
+1. Create a Google Cloud project
+2. Enable Google Drive API
+3. Create a Service Account
+4. Download the JSON key
+5. **Share your Drive folders** with the service account email (Editor access)
 
-# Terminal 2: Frontend
-cd frontend && npm run dev
-```
+### Frontend Setup
 
-Frontend: http://localhost:5173  
-Backend API: http://localhost:3001/api
-
----
-
-## 🌐 Deployment (Free Tiers)
-
-### Backend (Render.com)
-1. Sign up at [render.com](https://render.com) (use GitHub login)
-2. **New + → Web Service** → Connect `QRMELORDI/ilynect`
-3. Configure:
-   - **Name**: `ilynect-backend`
-   - **Root Directory**: `.`
-   - **Build Command**: `cd backend && npm install --production`
-   - **Start Command**: `cd backend && node server.js`
-   - **Plan**: Free
-4. Add Environment Variables:
-   - `GROQ_API_KEY`: Your Groq API key
-   - `ADMIN_EMAIL`: `aviindo863@gmail.com`
-   - `JWT_SECRET`: (auto-generated)
-5. Deploy → Copy backend URL
-
-### Frontend (Vercel.com)
-1. Sign up at [vercel.com](https://vercel.com) (GitHub login)
-2. **New Project** → Import `ilynect` repo
-3. Configure:
-   - **Root Directory**: `frontend`
-   - **Build Command**: `npm run build`
-   - **Output Directory**: `dist`
-   - **Environment Variable**: `VITE_API_URL` = `https://your-render-url.onrender.com/api`
-4. Deploy → Share the URL!
-
-### Keep Backend Awake (UptimeRobot)
-Render free tier sleeps after 15 mins. To keep alive 24/7:
-1. Sign up at [uptimerobot.com](https://uptimerobot.com) (free)
-2. **Add New Monitor** → **HTTP(s)**
-3. **URL**: `https://your-render-url.onrender.com/api/health`
-4. **Interval**: 5 minutes → Save
-
----
-
-## 📱 Android App Build
-
-### Prerequisites
-- Android Studio installed
-- Capacitor configured (already done)
-
-### Build Steps
 ```bash
 cd frontend
-
-# Build frontend
-npm run build
-
-# Sync to Android
-npx cap sync
-
-# Open in Android Studio
-npx cap open android
+npm install
+npm run dev          # Development
+npm run build        # Production build
+npx cap sync android # Sync to Android
 ```
 
-In Android Studio:
-1. **Build** → **Build APKs**
-2. APK location: `frontend/android/app/build/outputs/apk/debug/app-debug.apk`
-3. Share APK with family members!
+### Build APK
 
-### Android Permissions (AndroidManifest.xml)
-```xml
-<uses-permission android:name="android.permission.INTERNET" />
-<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+```bash
+cd frontend/android
+# With JAVA_HOME set to Android Studio JBR:
+./gradlew assembleDebug
+
+# APK location:
+# frontend/android/app/build/outputs/apk/debug/app-debug.apk
 ```
 
----
+## ☁️ Google Drive Integration
 
-## 🔐 User Roles & Access
+### Folder Structure
+| Type | Folder ID |
+|------|-----------|
+| Root (ONV_MEDIA) | `1vi2Sr6a4JfL1rM8lj2grMd0alo2Lnabx` |
+| Movies | `12Syy28-nBlUd5Qxc-3bESiD-L9R3y_gT` |
+| Photos | `1DvVjFqkTxxipvIr8mvKJAVDb_HxITFSI` |
+| Reels | `1hcj3cqng0hKuytACJeP3eZB9tztSPcFL` |
 
-| User | Email | Role | Access |
-|------|-------|------|--------|
-| You (Akshit) | aviindo863@gmail.com | Admin | Full access, movie uploads |
-| Brother (Nellore) | Any email | User | Chat, stream, download |
+### Upload Flow
+1. User selects file in app
+2. Frontend sends `multipart/form-data` to `/api/videos/upload` or `/api/photos/upload`
+3. Backend saves to local temp, then uploads to Google Drive via `driveService.uploadFile()`
+4. Drive returns `fileId`, stored in DB `drive_file_id` column
+5. Local temp file is deleted
+6. If Drive upload fails, falls back to local storage
 
-**Note**: Admin role is auto-assigned based on email match with `ADMIN_EMAIL` env variable.
+### Stream/Download Flow
+1. App requests `/api/files/stream/:type/:id`
+2. Backend checks if `drive_file_id` exists in DB
+3. If yes → streams from Google Drive
+4. If no → falls back to local file
+5. Supports Range headers for video seeking
 
----
+## 🔌 API Reference
 
-## ⚠️ Known Limitations
+### Base URL
+- Production: `https://ilynect-2.onrender.com/api`
+- Local: `http://localhost:3001/api`
 
-### 1. Render Ephemeral Storage
-**Issue**: Files uploaded to Render are lost on server restart/deploy.  
-**Workaround**: Re-upload after restart, or upgrade to paid plan with persistent disk.  
-**Future Fix**: Integrate Cloudflare R2 (free 10GB storage).
+### Endpoints
 
-### 2. Backend Sleep
-**Issue**: Free tier sleeps after 15 minutes of inactivity.  
-**Fix**: Use UptimeRobot to ping `/api/health` every 5 minutes.
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/health` | Health check (also wakes server) |
+| POST | `/auth/login` | Login with email + name |
+| POST | `/videos/upload` | Upload video (admin for movies) |
+| GET | `/videos` | List videos (filter: `sub_type`, `category`, `search`) |
+| DELETE | `/videos/:id` | Delete video |
+| POST | `/photos/upload` | Upload photo |
+| GET | `/photos` | List photos |
+| DELETE | `/photos/:id` | Delete photo |
+| GET | `/files/stream/:type/:id` | Stream video/photo (supports Range) |
+| GET | `/files/download/:type/:id` | Download file |
+| GET | `/files/photo/:id` | Direct photo view |
+| POST | `/videos/:id/view` | Record view |
+| POST | `/videos/:id/interact` | Like/dislike |
+| GET | `/history/:userId` | User activity history |
+| POST | `/presence` | Set user online |
+| GET | `/presence/online` | Get online users |
+| GET | `/version` | Check app version |
 
-### 3. Database Wipes on Restart
-**Issue**: SQLite database is recreated on Render restart.  
-**Solution**: Re-register users after each restart (auto-admin for `aviindo863@gmail.com`).
-
----
-
-## 📝 API Endpoints
-
-### Authentication
-- `POST /api/auth/login` - Login/register user
-- `PATCH /api/auth/update-name` - Update display name
-- `GET /api/auth/user/:id` - Get user details
-
-### Videos & Photos
-- `GET /api/videos` - List videos (filter by category, type, search)
-- `POST /api/videos/upload` - Upload video (admin-only for movies)
-- `GET /api/photos` - List photos
-- `POST /api/photos/upload` - Upload photo
-
-### Streaming & Downloads
-- `GET /api/files/stream/:type/:id` - Stream video/photo (supports Range requests)
-- `GET /api/files/download/:type/:id` - Download file (forces attachment)
-- `GET /api/files/photo/:id` - Direct photo view
-
-### Chat & Presence
-- `GET /api/chats` - Get messages (poll fallback)
-- `POST /api/presence` - Update online status
-- `GET /api/presence/online` - Get online users
-- **Socket.io**: Real-time messaging via WebSocket
-
-### AI & Daily Content
-- `POST /api/ai/ask` - Ask AI assistant (health/education)
-- `GET /api/daily` - Get daily content (cached per day)
-
----
-
-## 🛠️ Project Structure
-
+### Auth
+All endpoints (except `/health`) require:
 ```
-ilynect/
-├── backend/
-│   ├── server.js          # Express server + Socket.io
-│   ├── database.js        # SQLite database wrapper
-│   ├── routes/           # API routes (videos, photos, chats, etc.)
-│   ├── uploads/          # Local file storage (videos/photos/thumbnails)
-│   └── .env             # Environment variables (not in git)
-├── frontend/
-│   ├── src/
-│   │   ├── components/   # Reusable UI components
-│   │   ├── pages/        # App pages (Chat, Videos, Photos, etc.)
-│   │   ├── services/     # API calls, Socket.io client
-│   │   └── contexts/    # React contexts (Auth, Settings)
-│   ├── android/         # Android Capacitor project
-│   └── dist/           # Build output (not in git)
-├── render.yaml           # Render deployment config
-├── persistence_memory.md # Project memory & documentation
-└── README.md            # This file
+Authorization: Bearer <token>
 ```
 
+### Upload (Video)
+```
+POST /api/videos/upload
+Content-Type: multipart/form-data
+
+video: <file>
+title: string
+category: string
+sub_type: movie|reels|gossip
+userId: string
+userName: string
+```
+
+### Upload (Photo)
+```
+POST /api/photos/upload
+Content-Type: multipart/form-data
+
+photos: <file>
+title: string
+userId: string
+userName: string
+```
+
+## 🚢 Deployment
+
+### Backend (Render)
+1. Push code to GitHub
+2. Connect repo to Render as Web Service
+3. Set environment variables:
+   - `GOOGLE_SERVICE_ACCOUNT` - Full JSON string
+   - `ADMIN_EMAIL` - Admin email address
+   - `NODE_ENV` - production
+4. Deploy - Render auto-deploys on push
+5. **Auto-wake**: Frontend pings `/api/health` before every request
+
+### Frontend (APK)
+1. Build: `npm run build`
+2. Sync: `npx cap sync android`
+3. Build APK: `cd android && ./gradlew assembleDebug`
+4. Install on device
+
+## 🗄️ Database Schema
+
+### Tables
+- **users** - id, name, email, role, avatar_color, avatar_index, created_at
+- **videos** - id, title, description, category, sub_type, filename, original_name, thumbnail, size_bytes, duration_sec, mime_type, uploaded_by, uploader_name, drive_file_id, views, downloads, likes, dislikes, created_at
+- **photos** - id, title, filename, original_name, size_bytes, mime_type, uploaded_by, uploader_name, drive_file_id, downloads, created_at
+- **history** - id, user_id, user_name, content_id, content_type, action, content_title, created_at
+- **presence** - user_id, user_name, last_seen
+- **comments** - id, content_id, user_id, user_name, text, created_at
+- **user_interactions** - user_id, content_id, type
+
+### Migrations
+New columns added via `ALTER TABLE` with `try/catch` to avoid errors on fresh installs:
+- `videos.drive_file_id TEXT`
+- `photos.drive_file_id TEXT`
+
+## 🔐 Security
+
+- Service account credentials stored in Render env vars (not in code)
+- Token-based auth with `better-sqlite3`
+- Admin-only movie uploads
+- CORS configured for all origins (adjust for production)
+- File size limits: 5GB videos, 50MB photos
+
+## 📊 Version History
+
+| Version | Changes |
+|---------|---------|
+| 1.1.0 | Google Drive integration, chat removal, premium UI, auto-wake |
+| 1.0.5 | Presence tracking, version checking, profile page |
+| 1.0.4 | SQLite migration, chat unified |
+| 1.0.3 | Auto-update, Capacitor downloads |
+
+## 🛠️ Troubleshooting
+
+### Backend won't start
+- Check `GOOGLE_SERVICE_ACCOUNT` env var is valid JSON
+- Verify port 3001 is free
+
+### Upload fails
+- Check Drive Service Account has **Editor** access to folders
+- Verify folder IDs in `driveService.js`
+- Check logs: `Drive upload failed` message indicates Drive issue
+
+### APK won't install
+- Enable "Unknown sources" in Android settings
+- Check Java/Gradle versions match
+
+### Videos don't stream
+- Drive API quota may be exceeded
+- Check `drive_file_id` exists in DB
+- Fallback to local storage if Drive fails
+
+## 📄 License
+
+Private - Family use only.
+
 ---
 
-## 🔗 Quick Links
-
-### Live App
-- **Web**: https://ilynect.vercel.app
-- **API**: https://ilynect-2.onrender.com/api
-
-### Dashboards
-- **GitHub**: https://github.com/QRMELORDI/ilynect
-- **Render**: https://dashboard.render.com
-- **Vercel**: https://vercel.com/dashboard
-
-### External Services
-- **Groq API**: https://console.groq.com (Get free API key)
-- **UptimeRobot**: https://uptimerobot.com (Keep backend awake)
-
----
-
-## 💡 Tips for Family Use
-
-1. **First Login**: Click "User Login" (not Admin) → Enter name + email
-2. **Admin Access**: Use `aviindo863@gmail.com` to get admin rights automatically
-3. **Movie Uploads**: Only available for admin users
-4. **Real-Time Chat**: Both users (Prayagraj & Nellore) must be online
-5. **Downloads**: Files download directly to your device
-6. **Offline Use**: Download videos first, then watch without internet
-
----
-
-## 🐛 Troubleshooting
-
-### "Check your internet" Error
-**Cause**: Vercel frontend missing `VITE_API_URL` env variable.  
-**Fix**: Add to Vercel project settings → Environment Variables → Redeploy.
-
-### Login Fails
-**Cause**: Render database wiped on restart.  
-**Fix**: Wake up backend (visit `/api/health`), then re-register with same email.
-
-### Upload Failed
-**Cause**: Backend asleep or file too large for Render free tier.  
-**Fix**: Wake up backend first, compress videos to < 100MB.
-
-### Downloads Not Working
-**Cause**: Backend URL incorrect or backend asleep.  
-**Fix**: Verify `VITE_API_URL` in Vercel, wake up backend.
-
----
-
-## 📜 License
-
-This project is built for personal family use. All rights reserved.
-
----
-
-## ❤️ Made For Family
-
-**Built by**: Akshit (Prayagraj)  
-**For**: Our family (Prayagraj ↔ Nellore)  
-**With**: React, Express, Socket.io, and love ❤️  
-
-**ILYNECT** - *FAMILY CONNECT*
-
----
-
-*Last Updated: May 7, 2026*  
-*Version: 3.0.0 (Premium Family Edition)*
+<div align="center">
+Made with ❤️ in Prayagraj
+</div>

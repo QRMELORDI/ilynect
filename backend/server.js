@@ -96,8 +96,8 @@ const startServer = (port) => {
     console.log(`\n🎬 ILYNECT v3.0 - PREMIUM FAMILY EDITION`);
     console.log(`🌐 Local: http://localhost:${port}`);
     console.log(`🔗 API: http://localhost:${port}/api`);
-    console.log(`💬 Real-Time Chat: Socket.io enabled`);
-    console.log(`💾 Storage: LOCAL (No Firebase, No Drive!)`);
+    console.log(`☁️ Storage: Google Drive (with local fallback)`);
+    console.log(`💾 Database: SQLite (onv_player.db)`);
   }).on('error', (err) => {
     if (err.code === 'EADDRINUSE') {
       console.log(`Port ${port} busy, trying ${port + 1}...`);
