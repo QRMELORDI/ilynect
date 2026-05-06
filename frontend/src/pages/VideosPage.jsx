@@ -31,7 +31,7 @@ export default function VideosPage() {
       if (category !== 'All') params.category = category;
       if (searchQuery) params.search = searchQuery;
       const data = await getVideos(params);
-      setVideos(data || []);
+      setVideos(data.videos || data || []);
     } catch (err) {
       console.error('Load videos error:', err);
     }

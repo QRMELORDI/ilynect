@@ -1,6 +1,25 @@
 import { API_BASE_URL, ENDPOINTS } from '../apiConfig';
 import { io } from 'socket.io-client';
 
+// Wake up backend (Render free tier sleeps after 15 mins)
+export const wakeUpBackend = async (retries = 3) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      const response = await fetch(`${API_BASE_URL}/health`, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      if (response.ok) return true;
+    } catch (e) {
+      console.log(`Wake-up attempt ${i + 1} failed, retrying...`);
+      await new Promise(r => setTimeout(r, 2000));
+    }
+  }
+  return false;
+};
+
+export const getAPIBaseURL = () => API_BASE_URL;
+
 let socket = null;
 let chatCallback = null;
 
@@ -40,6 +59,16 @@ export const stopChatPoll = () => {
   }
 };
 
+export const wakeUpServer = async () => {
+  try {
+    const data = await fetchWithAuth(`${API_BASE_URL}/wakeup`, { timeout: 15000 });
+    return data.success;
+  } catch (err) {
+    console.warn('Wakeup attempt failed, retrying...', err.message);
+    return false;
+  }
+};
+
 export const fetchWithAuth = async (url, options = {}) => {
   const token = localStorage.getItem('ilynect_token');
   const headers = {
@@ -48,7 +77,9 @@ export const fetchWithAuth = async (url, options = {}) => {
     ...options.headers,
   };
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 60000);
+  const timeoutMs = options.timeout || 60000;
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  
   try {
     const response = await fetch(url, { ...options, headers, signal: controller.signal });
     clearTimeout(timeoutId);
@@ -59,7 +90,12 @@ export const fetchWithAuth = async (url, options = {}) => {
     return response.json();
   } catch (err) {
     clearTimeout(timeoutId);
-    if (err.name === 'AbortError') throw new Error('Connection timed out. Render is waking up, try again in 30 seconds.');
+    if (err.name === 'AbortError') {
+      throw new Error('Server is taking too long to respond. Render is likely waking up. Please wait 20 seconds and try again.');
+    }
+    if (err.message === 'Failed to fetch') {
+      throw new Error('Cannot connect to server. Check your internet or wait for the server to wake up.');
+    }
     throw err;
   }
 };

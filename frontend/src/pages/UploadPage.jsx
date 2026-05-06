@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { uploadVideo } from '../services/api';
+import { uploadVideo, uploadPhoto } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
 
@@ -71,7 +71,8 @@ export default function UploadPage() {
 
     try {
       const loc = await getUserLocation();
-      const res = await uploadVideo({
+      const uploadFn = type === 'photo' ? uploadPhoto : uploadVideo;
+      const res = await uploadFn({
         file,
         title: title || file.name,
         category,

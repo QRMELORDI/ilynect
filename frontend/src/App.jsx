@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { App as CapacitorApp } from '@capacitor/app';
+import { Filesystem, Directory } from '@capacitor/filesystem';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { SettingsProvider, useSettings } from './contexts/SettingsContext';
 import Navbar from './components/Navbar';
@@ -17,16 +18,42 @@ import UploadPage from './pages/UploadPage';
 import HistoryPage from './pages/HistoryPage';
 import DownloadsPage from './pages/DownloadsPage';
 import ProfilePage from './pages/ProfilePage';
-import { checkVersion, setUserOnline } from './services/api';
+import { checkVersion, setUserOnline, getAPIBaseURL } from './services/api';
 import './index.css';
 
-const APP_VERSION = '1.0.4';
+const APP_VERSION = '1.0.5';
+
+// Wake up backend on app start
+const wakeUpBackend = async (retries = 3) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      const response = await fetch(`${getAPIBaseURL()}/health`, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      if (response.ok) return true;
+    } catch (e) {
+      console.log(`Wake-up attempt ${i + 1} failed, retrying...`);
+      await new Promise(r => setTimeout(r, 2000));
+    }
+  }
+  return false;
+};
 
 function AppRoutes() {
   const { user, loading } = useAuth();
   const { t } = useSettings();
   const navigate = useNavigate();
   const location = useLocation();
+  const [appReady, setAppReady] = useState(false);
+
+  useEffect(() => {
+    // Wake up backend on app start
+    wakeUpBackend().then(awake => {
+      console.log(`Backend awake: ${awake}`);
+      setAppReady(true);
+    });
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -43,31 +70,38 @@ function AppRoutes() {
   }, [user]);
 
   useEffect(() => {
-    const handleFocus = async () => {
+    const checkForUpdates = async () => {
       try {
         const data = await checkVersion();
-        if (data.version !== APP_VERSION && data.update_required) {
-          alert(`✨ ILYNECT కొత్త వెర్షన్ (${data.version}) అందుబాటులో ఉంది! App will restart to apply updates.`);
+        if (data.version !== APP_VERSION) {
+          console.log(`New version available: ${data.version}, reloading...`);
+          // Auto-reload to get latest version from Vercel
           window.location.reload(true);
         }
-      } catch {}
-    };
-    window.addEventListener('focus', handleFocus);
-    handleFocus();
-
-    const backListener = CapacitorApp.addListener('backButton', ({ canGoBack }) => {
-      if (location.pathname === '/' || location.pathname === '/profile') {
-        CapacitorApp.exitApp();
-      } else {
-        navigate(-1);
+      } catch (e) {
+        console.log('Version check failed:', e.message);
       }
+    };
+
+    const handleFocus = async () => {
+      checkForUpdates();
+    };
+
+    // Check on focus (when app comes to foreground)
+    window.addEventListener('focus', handleFocus);
+    // Also check via Capacitor app state change
+    const appStateListener = CapacitorApp.addListener('appStateChange', ({ isActive }) => {
+      if (isActive) checkForUpdates();
     });
+
+    // Initial check
+    checkForUpdates();
 
     return () => {
       window.removeEventListener('focus', handleFocus);
-      backListener.then(l => l.remove());
+      appStateListener.remove();
     };
-  }, [navigate, location]);
+  }, []);
 
   if (loading) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)' }}>

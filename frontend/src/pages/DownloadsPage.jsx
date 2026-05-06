@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { getVideos, recordDownload } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { isNativePlatform } from '../utils/platform';
 import VideoPlayer from '../components/VideoPlayer';
 
 export default function DownloadsPage() {
@@ -34,57 +36,106 @@ const handleDownload = async (video) => {
     });
     await recordDownload(video.id, user?.id, user?.name);
 
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', video.downloadUrl);
-    const token = localStorage.getItem('ilynect_token');
-    if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-    xhr.responseType = 'blob';
-
-    xhr.onprogress = (e) => {
-      if (e.lengthComputable) {
-        const progress = Math.round((e.loaded / e.total) * 100);
-        setQueue(q => {
-          const next = q.map(x => x.video.id === video.id ? { ...x, progress } : x);
-          localStorage.setItem('onv_download_queue', JSON.stringify(next));
-          return next;
+    // Use Capacitor Filesystem for native platforms (Android)
+    if (isNativePlatform()) {
+      try {
+        // Download file as blob first
+        const response = await fetch(video.downloadUrl, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('ilynect_token') || ''}` }
         });
-      }
-    };
-
-    xhr.onload = () => {
-      if (xhr.status === 200) {
-        const blob = xhr.response;
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = video.original_name || video.title || 'download';
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-        setQueue(q => {
-          const next = q.map(x => x.video.id === video.id ? { ...x, progress: 100, status: 'done' } : x);
-          localStorage.setItem('onv_download_queue', JSON.stringify(next));
-          return next;
-        });
-      } else {
+        const blob = await response.blob();
+        
+        // Convert blob to base64
+        const reader = new FileReader();
+        reader.readAsDataURL(blob);
+        reader.onloadend = async () => {
+          const base64Data = reader.result.split(',')[1];
+          const fileName = video.original_name || video.title || `video_${video.id}`;
+          
+          try {
+            await Filesystem.writeFile({
+              path: fileName,
+              data: base64Data,
+              directory: Directory.Downloads  // Saves to device Downloads folder
+            });
+            
+            setQueue(q => {
+              const next = q.map(x => x.video.id === video.id ? { ...x, progress: 100, status: 'done' } : x);
+              localStorage.setItem('onv_download_queue', JSON.stringify(next));
+              return next;
+            });
+            alert(`Video saved to Downloads folder: ${fileName}`);
+          } catch (e) {
+            console.error('Filesystem write error:', e);
+            setQueue(q => {
+              const next = q.map(x => x.video.id === video.id ? { ...x, status: 'error' } : x);
+              localStorage.setItem('onv_download_queue', JSON.stringify(next));
+              return next;
+            });
+          }
+        };
+      } catch (err) {
+        console.error('Download error:', err);
         setQueue(q => {
           const next = q.map(x => x.video.id === video.id ? { ...x, status: 'error' } : x);
           localStorage.setItem('onv_download_queue', JSON.stringify(next));
           return next;
         });
       }
-    };
+    } else {
+      // Web fallback - use blob download
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', video.downloadUrl);
+      const token = localStorage.getItem('ilynect_token');
+      if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+      xhr.responseType = 'blob';
 
-    xhr.onerror = () => {
-      setQueue(q => {
-        const next = q.map(x => x.video.id === video.id ? { ...x, status: 'error' } : x);
-        localStorage.setItem('onv_download_queue', JSON.stringify(next));
-        return next;
-      });
-    };
+      xhr.onprogress = (e) => {
+        if (e.lengthComputable) {
+          const progress = Math.round((e.loaded / e.total) * 100);
+          setQueue(q => {
+            const next = q.map(x => x.video.id === video.id ? { ...x, progress } : x);
+            localStorage.setItem('onv_download_queue', JSON.stringify(next));
+            return next;
+          });
+        }
+      };
 
-    xhr.send();
+      xhr.onload = () => {
+        if (xhr.status === 200) {
+          const blob = xhr.response;
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = video.original_name || video.title || 'download';
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+          setQueue(q => {
+            const next = q.map(x => x.video.id === video.id ? { ...x, progress: 100, status: 'done' } : x);
+            localStorage.setItem('onv_download_queue', JSON.stringify(next));
+            return next;
+          });
+        } else {
+          setQueue(q => {
+            const next = q.map(x => x.video.id === video.id ? { ...x, status: 'error' } : x);
+            localStorage.setItem('onv_download_queue', JSON.stringify(next));
+            return next;
+          });
+        }
+      };
+
+      xhr.onerror = () => {
+        setQueue(q => {
+          const next = q.map(x => x.video.id === video.id ? { ...x, status: 'error' } : x);
+          localStorage.setItem('onv_download_queue', JSON.stringify(next));
+          return next;
+        });
+      };
+
+      xhr.send();
+    }
   };
 
   const removeFromQueue = (id) => {

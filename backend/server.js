@@ -20,6 +20,11 @@ const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'aviindo863@gmail.com').toLowerC
 
 app.use(cors({ origin: '*', credentials: true }));
 app.options('*', cors());
+
+// Wakeup endpoint for mobile cold-starts
+app.get('/api/wakeup', (req, res) => {
+  res.json({ success: true, message: 'Server is awake!', timestamp: Date.now() });
+});
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 

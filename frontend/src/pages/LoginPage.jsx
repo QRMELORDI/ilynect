@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
+import { wakeUpBackend } from '../services/api';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -8,26 +9,37 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState('');
 
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setStatus(language === 'te' ? 'సర్వర్ నిద్రలేస్తోంది...' : 'Waking up server...');
     try {
+      // Wake up backend first
+      await wakeUpBackend();
+      setStatus(language === 'te' ? 'లాగిన్ అవుతుంది...' : 'Logging in...');
       await login(email, name);
     } catch (err) {
       console.error('Login Error:', err.message);
-      alert(err.message || (language === 'te' ? 'లాగిన్ విఫలమైంది. దయచేసి ఇంటర్నెట్ కనెక్షన్ చెక్ చేయండి.' : 'Login failed. Please check your connection.'));
+      setStatus('');
+      alert(err.message || (language === 'te' ? 'లాగిన్ విఫలయింది.' : 'Login failed.'));
     }
     setLoading(false);
   };
 
-  const handleAdminLogin = async () => {
+const handleAdminLogin = async () => {
     setLoading(true);
+    setStatus(language === 'te' ? 'సర్వర్ నిద్రలేస్తోంది...' : 'Waking up server...');
     try {
+      // Wake up backend first
+      await wakeUpBackend();
+      setStatus(language === 'te' ? 'లాగిన్ అవుతుంది...' : 'Logging in...');
       await login('aviindo863@gmail.com', 'Akshit');
     } catch (err) {
       console.error('Admin Login Error:', err.message);
-      alert(err.message || (language === 'te' ? 'లాగిన్ విఫలమైంది.' : 'Admin Login failed.'));
+      setStatus('');
+      alert(err.message || (language === 'te' ? 'లాగిన్ విఫలయింది.' : 'Admin Login failed.'));
     }
     setLoading(false);
   };
@@ -115,7 +127,7 @@ export default function LoginPage() {
           letterSpacing: '2px',
           textTransform: 'uppercase'
         }}>
-          FAMILY CONNECT
+          {status || 'FAMILY CONNECT'}
         </div>
         
         <form onSubmit={handleSubmit} style={{ textAlign: 'left' }}>

@@ -197,7 +197,7 @@ export default function ProfilePage() {
               </svg>
             </div>
             
-            <div className="list-item" onClick={() => navigate('/downloads')}>
+            <div className="list-item" onClick={() => navigate('/downloads')} style={{ borderBottom: '1px solid var(--border-glass)' }}>
               <div style={{ 
                 width: 36, height: 36, borderRadius: 10, 
                 background: 'linear-gradient(135deg, #30D158, #34C759)',
@@ -214,6 +214,25 @@ export default function ProfilePage() {
               <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--text-muted)">
                 <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
               </svg>
+            </div>
+
+            <div className="list-item" onClick={() => window.location.reload(true)}>
+              <div style={{ 
+                width: 36, height: 36, borderRadius: 10, 
+                background: 'linear-gradient(135deg, #5856D6, #AF52DE)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff">
+                  <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                </svg>
+              </div>
+              <div className="list-item-content">
+                <div className="list-item-title">Update App</div>
+                <div className="list-item-sub">Sync latest changes from server</div>
+              </div>
+              <div style={{ fontSize: '0.6rem', fontWeight: 800, background: 'rgba(255,255,255,0.1)', padding: '4px 8px', borderRadius: 8, color: 'var(--text-muted)' }}>
+                v1.0.4
+              </div>
             </div>
           </div>
         </div>
