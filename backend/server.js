@@ -28,7 +28,10 @@ app.get('/api/wakeup', (req, res) => {
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-['videos', 'photos', 'thumbnails', 'tmp'].forEach(dir => {
+// Serve static files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+['videos', 'photos', 'tmp'].forEach(dir => {
   const p = path.join(__dirname, dir);
   if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true });
 });
@@ -36,12 +39,17 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 const avatars = ['🌸','🌹','🌻','🌺','🌷','🌼','💐','🌿','🍀','🌾'];
 const avatarColors = ['#E50914','#FF6B35','#3D5A80','#7B2D8B','#F72585','#4CC9F0','#4361EE','#FF9F1C','#06D6A0','#118AB2'];
 
-app.post('/api/auth/login', async (req, res) => {
-  try {
-    const { name, email } = req.body;
-    if (!email) return res.status(400).json({ error: 'Email required' });
-    const cleanEmail = email.trim().toLowerCase();
-    const cleanName = (name || cleanEmail.split('@')[0]).trim();
+// API Routes (with /api prefix)
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/videos', require('./routes/videos'));
+app.use('/api/photos', require('./routes/photos'));
+app.use('/api/chats', require('./routes/chats'));
+app.use('/api/content', require('./routes/content'));
+app.use('/api/daily', require('./routes/daily'));
+app.use('/api/files', require('./routes/files'));
+app.use('/api/presence', require('./routes/presence'));
+app.use('/api/history', require('./routes/history'));
+app.use('/api/version', require('./routes/version'));
 
     let user = await db.getAsync('SELECT * FROM users WHERE email = ?', [cleanEmail]);
     if (!user) {
