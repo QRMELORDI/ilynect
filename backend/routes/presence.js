@@ -9,7 +9,7 @@ router.post('/', async (req, res) => {
     if (!userId) return res.json({ success: true });
     
     await db.runAsync(
-      `INSERT OR REPLACE INTO presence (user_id, user_name, last_seen) VALUES (?, ?, strftime("%s", "now"))`,
+      "INSERT OR REPLACE INTO presence (user_id, user_name, last_seen) VALUES (?, ?, strftime('%s', 'now'))",
       [userId, userName]
     );
     

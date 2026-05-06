@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 // Current App Version - Updated to match frontend
-const APP_VERSION = "1.0.5";
+const APP_VERSION = "1.1.0";
 const UPDATE_URL = "https://ilynect.vercel.app"; 
 
 router.get('/', (req, res) => {

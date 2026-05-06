@@ -44,7 +44,7 @@ app.use('/api/version', require('./routes/version'));
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', time: new Date().toISOString(), version: '1.0.5' });
+  res.json({ status: 'ok', time: new Date().toISOString(), version: '1.1.0' });
 });
 
 

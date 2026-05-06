@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
-import { getHistory, updateMovieRulzConfig } from '../services/api';
+import { getHistory, updateMovieRulzConfig, getMovieRulzConfig } from '../services/api';
 
 const FLOWERS = ['🌸','🌹','🌻','🌺','🌷','🌼','💐','🌿','🍀','🌾'];
 
@@ -18,10 +18,15 @@ export default function ProfilePage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user?.uid) {
-      getHistory(user.uid).then(setHistory).catch(() => {});
+    if (user?.id) {
+      getHistory(user.id).then(setHistory).catch(() => {});
     }
-  }, [user?.uid]);
+    if (isAdmin) {
+      getMovieRulzConfig().then(data => {
+        if (data.domain) setNewDomain(data.domain);
+      }).catch(() => {});
+    }
+  }, [user?.id, isAdmin]);
 
   const handleSaveName = async () => {
     if (newName.trim() && newName !== user?.name) {

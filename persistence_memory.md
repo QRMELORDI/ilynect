@@ -238,6 +238,42 @@ JAVA_HOME: C:\Program Files\Android\Android Studio\jbr
 
 ---
 
+## ILYNECT Persistence Memory & Architectural Decisions (v3.0)
+
+## 🎯 Current State: "MovieRulz & Gallery Overhaul"
+The app has transitioned into a highly specialized Telugu movie hub and family gallery.
+
+### 1. MovieRulz Integration (High Priority)
+- **Scraper**: Targets `telugu-featured` and `telugu-dubbed` categories.
+- **Details**: Dynamically fetches posters, descriptions, and `EasySyncr` download links.
+- **Domain Persistence**: Domain is stored in the `settings` table of SQLite. Admin can update this via the Profile UI.
+- **Downloads**: Uses `@capacitor/browser` to trigger native EasySyncr downloads.
+
+### 2. Media & Gallery
+- **Photos**: Switched to a 3-column grid with `aspect-ratio: 1`.
+- **Lightbox**: Implemented a custom swipeable lightbox with left/right navigation and high-quality image rendering.
+- **Activity**: All uploads (photos/videos) and downloads are recorded in the `history` table.
+
+### 3. UI/UX Consistency
+- **Design System**: Strict adherence to macOS-style glassmorphism.
+- **Spacing**: Fixed `page-wrapper` padding and `navbar` heights for better touch ergonomics on mobile.
+- **Footer**: Reduced spacing to maximize vertical screen space.
+
+### 4. Backend Stability
+- **UUID**: Standardized on `crypto.randomUUID()` for all ID generation.
+- **History**: Ensured API responses for history are correctly mapped on the frontend.
+- **Drive**: Backend automatically handles Drive upload and local file cleanup.
+
+## 🔑 Crucial Logic
+- **Admin**: Email `aviindo863@gmail.com` unlocks `Upload Movie` and `MovieRulz Config`.
+- **Categories**: `scraper.js` filters specifically for Telugu origin content to satisfy user requirements.
+- **Caching**: `localStorage` items (`ily_videos_cache`, `ily_photos_cache`) are cleared upon successful uploads to ensure UI sync.
+
+---
+*Last updated: 2026-05-06*
+
+---
+
 ## ⚠️ Known Limitations
 
 1. **Render free tier sleeps** after 15 min of inactivity → First request takes 30-50s to wake up

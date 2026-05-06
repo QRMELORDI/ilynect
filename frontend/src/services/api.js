@@ -155,6 +155,7 @@ export const uploadVideo = async (uploadData, onProgress) => {
         if (xhr.status >= 200 && xhr.status < 300) {
           const result = JSON.parse(xhr.response);
           if (onProgress) onProgress(100);
+          localStorage.removeItem('ily_videos_cache');
           resolve(result.video || result);
         } else {
           const err = JSON.parse(xhr.response || '{}');
@@ -202,6 +203,7 @@ export const uploadPhotos = async (uploadData, onProgress) => {
         if (xhr.status >= 200 && xhr.status < 300) {
           const result = JSON.parse(xhr.response);
           if (onProgress) onProgress(100);
+          localStorage.removeItem('ily_photos_cache');
           resolve(result.photos?.[0] || result);
         } else {
           const err = JSON.parse(xhr.response || '{}');
@@ -271,8 +273,8 @@ export const recordView = async (id, userId, userName) => {
 
 export const getHistory = async (userId) => {
   try {
-    const rows = await fetchWithAuth(ENDPOINTS.HISTORY(userId));
-    return (rows || []).map(r => ({
+    const data = await fetchWithAuth(ENDPOINTS.HISTORY(userId));
+    return (data.history || []).map(r => ({
       id: r.id,
       action: r.action,
       content_title: r.content_title,
@@ -408,8 +410,8 @@ export const getWatchPosition = async (videoId) => {
     return 0;
   }
 };
-export const getMovieRulzMovies = async (page = 1, searchQuery = '') => {
-  const url = `${ENDPOINTS.MOVIERULZ}?page=${page}&s=${encodeURIComponent(searchQuery)}`;
+export const getMovieRulzMovies = async (page = 1, searchQuery = '', category = 'telugu-featured') => {
+  const url = `${ENDPOINTS.MOVIERULZ}?page=${page}&s=${encodeURIComponent(searchQuery)}&category=${category}`;
   return fetchWithAuth(url);
 };
 
@@ -425,4 +427,8 @@ export const updateMovieRulzConfig = async (domain) => {
     method: 'POST',
     body: JSON.stringify({ domain }),
   });
+};
+
+export const getMovieRulzConfig = async () => {
+  return fetchWithAuth(`${ENDPOINTS.MOVIERULZ}/config`);
 };

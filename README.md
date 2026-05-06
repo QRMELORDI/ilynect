@@ -92,6 +92,47 @@ ILYNECT/
 
 ---
 
+## ILYNECT v3.0 - Premium Family Super App
+
+ILYNECT (Family Connect) is a high-end, macOS-inspired super app designed for exclusive family use. It integrates MovieRulz content, private media sharing, health/educational modules, and a premium 3D UI.
+
+## 🚀 Key Features (v3.0)
+
+- **MovieRulz Integration**: Browse Telugu Featured and Dubbed movies with high-quality posters and details.
+- **EasySyncr Native Downloads**: Direct integration for downloading movies to your mobile device.
+- **Premium Photo Gallery**: 3-column grid view with a swipeable, full-screen lightbox and pinch-to-zoom.
+- **Admin Dashboard**: Update the MovieRulz domain dynamically without app redeployments.
+- **Activity Tracking**: Complete history of uploads, views, and downloads.
+- **Daily Content**: Telugu Neethivaakyam, Health Tips, Brain Twisters, and more.
+- **Cloud-Native Storage**: Automated Google Drive backup with local fallback.
+
+## 🛠️ Tech Stack
+
+- **Frontend**: React 19 + Vite + Capacitor 7
+- **Backend**: Node.js + Express
+- **Database**: SQLite (Better-SQLite3)
+- **Design**: Vanilla CSS (Apple/macOS Glassmorphism)
+- **Storage**: Google Drive API
+
+## 📲 How to Build APK
+
+1. Install dependencies: `npm install` (in both frontend and backend)
+2. Build frontend: `cd frontend && npm run build`
+3. Sync Capacitor: `npx cap sync android`
+4. Open in Android Studio: `npx cap open android`
+5. Generate signed APK/Bundle from Android Studio.
+
+## 🔑 Admin Setup
+
+The admin user is defined by the email `aviindo863@gmail.com`. Admins can:
+- Upload Movies/Kids Zone content.
+- Update the MovieRulz domain in the Profile settings.
+
+---
+Designed with ❤️ for the Family.
+
+---
+
 ## ⚙️ Deployment & Setup
 
 ### Prerequisites

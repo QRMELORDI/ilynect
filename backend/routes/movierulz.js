@@ -5,8 +5,8 @@ const { authenticateToken } = require('../middleware/auth');
 
 // Get movies list
 router.get('/', async (req, res) => {
-  const { page, s } = req.query;
-  const movies = await scraper.getMovies(page || 1, s || '');
+  const { page, s, cat } = req.query;
+  const movies = await scraper.getMovies(page || 1, s || '', cat || 'telugu-featured');
   res.json({ success: true, movies });
 });
 
@@ -15,8 +15,13 @@ router.post('/details', async (req, res) => {
   const { url } = req.body;
   if (!url) return res.status(400).json({ error: 'URL is required' });
   
-  const downloadLink = await scraper.getDownloadLink(url);
-  res.json({ success: true, downloadLink });
+  const details = await scraper.getMovieDetails(url);
+  res.json({ success: true, details });
+});
+
+// Get current config
+router.get('/config', async (req, res) => {
+  res.json({ success: true, domain: scraper.getDomain() });
 });
 
 // Admin only: Update domain

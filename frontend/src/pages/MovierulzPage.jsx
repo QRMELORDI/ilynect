@@ -9,16 +9,23 @@ export default function MovierulzPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
-  const [downloadingId, setDownloadingId] = useState(null);
+  const [category, setCategory] = useState('telugu-featured');
+  const [selectedMovie, setSelectedMovie] = useState(null);
+  const [fetchingDetails, setFetchingDetails] = useState(false);
 
   useEffect(() => {
     loadMovies();
-  }, [page]);
+  }, [page, category]);
 
   const loadMovies = async () => {
     setLoading(true);
     try {
-      const data = await getMovieRulzMovies(page, search);
+      // Reinforce Telugu filter in search if not already present
+      let query = search;
+      if (query && !query.toLowerCase().includes('telugu')) {
+        query += ' telugu';
+      }
+      const data = await getMovieRulzMovies(page, query, category);
       if (data.success) {
         setMovies(data.movies);
       }
@@ -36,111 +43,154 @@ export default function MovierulzPage() {
   };
 
   const handleMovieClick = async (movie) => {
-    setDownloadingId(movie.id);
+    setFetchingDetails(true);
     try {
       const data = await getMovieRulzDetails(movie.link);
-      if (data.success && data.downloadLink) {
-        // Record as view/download in our system
-        await recordView(movie.id, user.id, user.name || user.displayName);
-        await recordDownload(movie.id, user.id, user.name || user.displayName, 'movie');
-        
-        // Open the download link in the browser
-        await Browser.open({ url: data.downloadLink });
-      } else {
-        alert('Download link not found on MovieRulz for this movie.');
+      if (data.success) {
+        setSelectedMovie({
+          ...movie,
+          ...data.details
+        });
       }
     } catch (err) {
       console.error('Get details error:', err);
-      alert('Failed to fetch download link.');
     } finally {
-      setDownloadingId(null);
+      setFetchingDetails(false);
+    }
+  };
+
+  const handleDownload = async (movie) => {
+    if (!movie.easysyncrLink) return;
+    try {
+      await recordView(movie.id, user.id, user.name);
+      await recordDownload(movie.id, user.id, user.name, 'movie');
+      await Browser.open({ url: movie.easysyncrLink });
+    } catch (err) {
+      console.error('Download error:', err);
+    }
+  };
+
+  const handleWatchTrailer = async (movie) => {
+    if (!movie.trailerLink) return;
+    try {
+      await Browser.open({ url: movie.trailerLink });
+    } catch (err) {
+      console.error('Trailer error:', err);
     }
   };
 
   return (
     <div className="page-wrapper">
       <div className="container">
-        <h1 className="page-title" style={{ marginBottom: 20 }}>Browse MovieRulz</h1>
+        <h1 className="page-title" style={{ marginBottom: 20 }}>MovieRulz</h1>
 
         <form onSubmit={handleSearch} style={{ marginBottom: 20 }}>
           <input 
             type="text" 
             className="input" 
-            placeholder="Search for movies..." 
+            placeholder="Search Telugu movies..." 
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </form>
 
+        <div style={{ display: 'flex', gap: 10, marginBottom: 24 }}>
+          <button 
+            className={`btn ${category === 'telugu-featured' ? 'btn-primary' : 'btn-secondary'}`}
+            onClick={() => { setCategory('telugu-featured'); setPage(1); }}
+            style={{ flex: 1, fontSize: '0.75rem', padding: '12px 8px' }}
+          >
+            TELUGU ORIGINAL
+          </button>
+          <button 
+            className={`btn ${category === 'telugu-dubbed' ? 'btn-primary' : 'btn-secondary'}`}
+            onClick={() => { setCategory('telugu-dubbed'); setPage(1); }}
+            style={{ flex: 1, fontSize: '0.75rem', padding: '12px 8px' }}
+          >
+            TELUGU DUBBED
+          </button>
+        </div>
+
         {loading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: 40 }}>
-            <div className="spinner" />
+          <div style={{ display: 'flex', justifyContent: 'center', padding: 80 }}><div className="spinner" /></div>
+        ) : movies.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-state-icon">🎬</div>
+            <div className="empty-state-title">NO MOVIES FOUND</div>
           </div>
         ) : (
-          <div className="quick-grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
+          <div className="movie-grid">
             {movies.map(movie => (
-              <div 
-                key={movie.id} 
-                className="glass-elevated" 
-                style={{ 
-                  borderRadius: 16, 
-                  overflow: 'hidden', 
-                  cursor: 'pointer',
-                  position: 'relative'
-                }}
-                onClick={() => handleMovieClick(movie)}
-              >
-                <img 
-                  src={movie.image} 
-                  alt={movie.title} 
-                  style={{ width: '100%', height: 200, objectFit: 'cover' }} 
-                />
-                <div style={{ padding: 12 }}>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 700, lineHeight: 1.3 }}>
-                    {movie.title}
-                  </div>
+              <div key={movie.id} className="movie-card fade-up" onClick={() => handleMovieClick(movie)}>
+                <div className="movie-poster-container">
+                  <img src={movie.image} alt={movie.title} className="movie-poster" loading="lazy" />
                 </div>
-                {downloadingId === movie.id && (
-                  <div style={{ 
-                    position: 'absolute', 
-                    inset: 0, 
-                    background: 'rgba(0,0,0,0.6)', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center' 
-                  }}>
-                    <div className="spinner" style={{ width: 24, height: 24 }} />
-                  </div>
-                )}
+                <div className="movie-info">
+                  <div className="movie-title">{movie.title}</div>
+                </div>
               </div>
             ))}
           </div>
         )}
 
-        {movies.length === 0 && !loading && (
-          <div className="empty-state">
-            <div className="empty-state-icon">🎬</div>
-            <div className="empty-state-title">No movies found</div>
-            <div className="empty-state-desc">Try searching for something else</div>
-          </div>
-        )}
-
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 20, marginTop: 30 }}>
-          <button 
-            className="btn btn-secondary" 
-            onClick={() => setPage(p => Math.max(1, p - 1))}
-            disabled={page === 1}
-          >
-            Previous
-          </button>
-          <button 
-            className="btn btn-secondary" 
-            onClick={() => setPage(p => p + 1)}
-          >
-            Next
-          </button>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 15, marginTop: 40, paddingBottom: 40 }}>
+          <button className="btn btn-secondary" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>PREV</button>
+          <button className="btn btn-secondary" onClick={() => setPage(p => p + 1)}>NEXT</button>
         </div>
       </div>
+
+      {selectedMovie && (
+        <div className="lightbox" onClick={() => setSelectedMovie(null)}>
+          <button className="lightbox-close" onClick={() => setSelectedMovie(null)}>✕</button>
+          <div className="lightbox-content" onClick={e => e.stopPropagation()} style={{ overflowY: 'auto', padding: '100px 20px 40px' }}>
+            <div className="container" style={{ maxWidth: 400 }}>
+              <div style={{ borderRadius: 20, overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.8)', marginBottom: 25 }}>
+                <img src={selectedMovie.poster || selectedMovie.image} alt={selectedMovie.title} style={{ width: '100%', display: 'block' }} />
+              </div>
+              
+              <h2 style={{ fontSize: '1.4rem', fontWeight: 900, marginBottom: 10 }}>{selectedMovie.title}</h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.6, marginBottom: 30 }}>
+                {selectedMovie.description}
+              </p>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
+                {selectedMovie.trailerLink && (
+                  <button 
+                    className="upload-btn-3d" 
+                    onClick={() => handleWatchTrailer(selectedMovie)}
+                    style={{ background: 'linear-gradient(145deg, #FF3B30, #D12C26)', boxShadow: '0 6px 0 #8E1B17' }}
+                  >
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M10 16.5l6-4.5-6-4.5v9zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+                    WATCH TRAILER
+                  </button>
+                )}
+
+                {selectedMovie.easysyncrLink ? (
+                  <button 
+                    className="upload-btn-3d" 
+                    onClick={() => handleDownload(selectedMovie)}
+                    style={{ background: 'linear-gradient(145deg, #30D158, #28B34B)', boxShadow: '0 6px 0 #1B8C3A' }}
+                  >
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                    DOWNLOAD NOW
+                  </button>
+                ) : (
+                  <div className="glass" style={{ padding: 20, textAlign: 'center', color: 'var(--apple-pink)', fontWeight: 800 }}>
+                    LINK NOT AVAILABLE YET
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {fetchingDetails && (
+        <div className="lightbox" style={{ background: 'rgba(0,0,0,0.7)' }}>
+          <div className="spinner" />
+          <div style={{ marginTop: 15, fontWeight: 800, fontSize: '0.8rem', letterSpacing: 1 }}>FETCHING LINKS...</div>
+        </div>
+      )}
     </div>
   );
 }

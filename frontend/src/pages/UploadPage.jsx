@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { uploadVideo, uploadPhoto } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
+import { compressImage } from '../utils/image';
 
 export default function UploadPage() {
   const { user } = useAuth();
@@ -70,10 +71,21 @@ export default function UploadPage() {
     setUploadProgress(0);
 
     try {
+      let finalFile = file;
+      if (type === 'photo') {
+        setUploadProgress(5); // Progress for compression
+        try {
+          finalFile = await compressImage(file, { maxWidth: 1200, quality: 0.7 });
+          console.log(`Compressed: ${file.size} -> ${finalFile.size}`);
+        } catch (compErr) {
+          console.error('Compression failed, using original:', compErr);
+        }
+      }
+
       const loc = await getUserLocation();
       const uploadFn = type === 'photo' ? uploadPhoto : uploadVideo;
       const res = await uploadFn({
-        file,
+        file: finalFile,
         title: title || file.name,
         category,
         sub_type: type,

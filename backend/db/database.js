@@ -9,18 +9,33 @@ const db = new Database(path.join(dbDir, 'onv_player.db'));
 
 // Compatibility wrappers for routes using async API
 db.runAsync = (sql, params = []) => {
-  const stmt = db.prepare(sql);
-  return stmt.run(params);
+  try {
+    const stmt = db.prepare(sql);
+    return stmt.run(params);
+  } catch (err) {
+    console.error(`❌ SQL runAsync Error: ${err.message}\nSQL: ${sql}\nParams: ${JSON.stringify(params)}`);
+    throw err;
+  }
 };
 
 db.getAsync = (sql, params = []) => {
-  const stmt = db.prepare(sql);
-  return stmt.get(params);
+  try {
+    const stmt = db.prepare(sql);
+    return stmt.get(params);
+  } catch (err) {
+    console.error(`❌ SQL getAsync Error: ${err.message}\nSQL: ${sql}\nParams: ${JSON.stringify(params)}`);
+    throw err;
+  }
 };
 
 db.allAsync = (sql, params = []) => {
-  const stmt = db.prepare(sql);
-  return stmt.all(params);
+  try {
+    const stmt = db.prepare(sql);
+    return stmt.all(params);
+  } catch (err) {
+    console.error(`❌ SQL allAsync Error: ${err.message}\nSQL: ${sql}\nParams: ${JSON.stringify(params)}`);
+    throw err;
+  }
 };
 
 db.pragma('journal_mode = WAL');
