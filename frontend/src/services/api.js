@@ -148,6 +148,10 @@ export const voteMessage = async (msgId, userId, type) => {
   }
 };
 
+export const interactVideo = async (videoId, userId, type) => {
+  return voteMessage(videoId, userId, type);
+};
+
 export const getVideos = async (params = {}) => {
   try {
     const qp = new URLSearchParams();
@@ -155,11 +159,18 @@ export const getVideos = async (params = {}) => {
     if (params.sub_type) qp.set('sub_type', params.sub_type);
     if (params.category && params.category !== 'All') qp.set('category', params.category);
     if (params.search) qp.set('search', params.search);
-    
+
+    // Check cache fallback logic
+    const cached = localStorage.getItem('ily_videos_cache');
+    if (cached && !params.search) {
+      // Background fetch continues but we can return cache if wanted
+      // (For now just try fetching fresh, but this gives a fallback)
+    }
+
     const data = await fetchWithAuth(`${ENDPOINTS.VIDEOS}?${qp.toString()}`);
     const rawVideos = data.videos || [];
     
-    return rawVideos.map(v => ({
+    const processed = rawVideos.map(v => ({
       ...v,
       id: v.id,
       createdAt: v.created_at ? { toDate: () => new Date(v.created_at * 1000) } : new Date(),
@@ -167,8 +178,16 @@ export const getVideos = async (params = {}) => {
       downloadUrl: ENDPOINTS.DOWNLOAD('video', v.id),
       photoUrl: v.sub_type === 'photo' ? ENDPOINTS.PHOTO(v.id) : null,
     }));
+
+    if (!params.search && !params.sub_type) {
+      localStorage.setItem('ily_videos_cache', JSON.stringify(processed));
+    }
+
+    return processed;
   } catch (err) {
     console.error('Get videos error:', err);
+    const cached = localStorage.getItem('ily_videos_cache');
+    if (cached) return JSON.parse(cached);
     return [];
   }
 };
@@ -176,14 +195,19 @@ export const getVideos = async (params = {}) => {
 export const getPhotos = async () => {
   try {
     const data = await fetchWithAuth(ENDPOINTS.PHOTOS);
-    return (data.photos || []).map(p => ({
+    const processed = (data.photos || []).map(p => ({
       ...p,
       createdAt: p.created_at ? { toDate: () => new Date(p.created_at * 1000) } : new Date(),
       photoUrl: ENDPOINTS.PHOTO(p.id),
       downloadUrl: ENDPOINTS.DOWNLOAD('photo', p.id),
     }));
+    
+    localStorage.setItem('ily_photos_cache', JSON.stringify(processed));
+    return processed;
   } catch (err) {
     console.error('Get photos error:', err);
+    const cached = localStorage.getItem('ily_photos_cache');
+    if (cached) return JSON.parse(cached);
     return [];
   }
 };
@@ -240,6 +264,7 @@ export const uploadVideo = async (uploadData, onProgress) => {
 };
 
 export const uploadPhotos = uploadVideo;
+export const uploadPhoto = uploadVideo;
 
 export const recordDownload = async (id, userId, userName, type = 'video') => {
   try {
@@ -251,6 +276,33 @@ export const recordDownload = async (id, userId, userName, type = 'video') => {
     console.error('Record download error:', err);
   }
 };
+
+export const recordVideoDownload = recordDownload;
+export const recordPhotoDownload = recordDownload;
+
+export const deleteVideo = async (id) => {
+  try {
+    return await fetchWithAuth(`${ENDPOINTS.VIDEOS}/${id}`, {
+      method: 'DELETE',
+    });
+  } catch (err) {
+    console.error('Delete video error:', err);
+    throw err;
+  }
+};
+
+export const deletePhoto = async (id) => {
+  try {
+    return await fetchWithAuth(`${ENDPOINTS.PHOTOS}/${id}`, {
+      method: 'DELETE',
+    });
+  } catch (err) {
+    console.error('Delete photo error:', err);
+    throw err;
+  }
+};
+
+export const getPhotoUrl = (id) => ENDPOINTS.PHOTO(id);
 
 export const recordView = async (id, userId, userName) => {
   try {
@@ -386,5 +438,19 @@ export const updateUserName = async (userId, name) => {
   } catch (err) {
     console.error('Update name error:', err);
     throw err;
+  }
+};
+
+export const saveWatchPosition = async (videoId, position) => {
+  try {
+    localStorage.setItem(`watch_pos_${videoId}`, position.toString());
+  } catch (e) {}
+};
+
+export const getWatchPosition = async (videoId) => {
+  try {
+    return parseFloat(localStorage.getItem(`watch_pos_${videoId}`) || '0');
+  } catch (e) {
+    return 0;
   }
 };

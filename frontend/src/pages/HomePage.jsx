@@ -1,131 +1,92 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getVideos, getPhotos, getDailyContent } from '../services/api';
+import { getVideos, getPhotos } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function HomePage() {
   const { user } = useAuth();
-  const [stats, setStats] = useState({ videos: 0, photos: 0 });
-  const [dailyFact, setDailyFact] = useState('');
-  const [healthTip, setHealthTip] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({ videos: 0, photos: 0, reels: 0 });
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Try to load from cache first for instant UI
-    const cachedStats = localStorage.getItem('ily_stats');
-    const cachedFact = localStorage.getItem('ily_daily_fact');
-    const cachedHealth = localStorage.getItem('ily_health_tip');
-    
-    if (cachedStats) setStats(JSON.parse(cachedStats));
-    if (cachedFact) setDailyFact(cachedFact);
-    if (cachedHealth) setHealthTip(cachedHealth);
-
     loadStats();
-    loadDailyPreview();
   }, []);
 
   const loadStats = async () => {
     try {
       const [vData, pData] = await Promise.all([
-        getVideos().catch(() => ({ videos: [] })),
-        getPhotos().catch(() => ({ photos: [] }))
+        getVideos({ sub_type: 'movie' }).catch(() => ({ videos: [] })),
+        getPhotos().catch(() => ({ photos: [] })),
+        getVideos({ sub_type: 'gossip' }).catch(() => ({ videos: [] })),
       ]);
-      const newStats = {
-        videos: (vData.videos || vData || []).length,
-        photos: (pData.photos || pData || []).length
-      };
-      setStats(newStats);
-      localStorage.setItem('ily_stats', JSON.stringify(newStats));
-    } catch (e) {
-      console.error("Stats load error:", e);
-    }
-  };
-
-  const loadDailyPreview = async () => {
-    try {
-      const edu = await getDailyContent('education');
-      if (edu && edu.fact) {
-        setDailyFact(edu.fact);
-        localStorage.setItem('ily_daily_fact', edu.fact);
-      }
+      setStats({
+        videos: (vData.videos || []).length,
+        photos: (pData.photos || []).length,
+        reels: (pData.videos || []).length,
+      });
     } catch {}
-    try {
-      const health = await getDailyContent('health');
-      if (health && health.fact) {
-        setHealthTip(health.fact);
-        localStorage.setItem('ily_health_tip', health.fact);
-      }
-    } catch {}
-    setLoading(false);
   };
 
   const quickCards = [
-    { icon: '🎬', label: 'Movies', desc: `${stats.videos} Videos`, path: '/videos', color: 'linear-gradient(135deg, #FF375F, #FF6B6B)' },
-    { icon: '📸', label: 'Photos', desc: `${stats.photos} Photos`, path: '/photos', color: 'linear-gradient(135deg, #64D2FF, #5AC8FA)' },
-    { icon: '🎯', label: 'Reels', desc: 'Watch Reels', path: '/gossips', color: 'linear-gradient(135deg, #BF5AF2, #AF52DE)' },
-    { icon: '💬', label: 'Chat', desc: 'Family Chat', path: '/chats', color: 'linear-gradient(135deg, #30D158, #34C759)' },
-    { icon: '📚', label: 'Education', desc: 'GK, Tips', path: '/education', color: 'linear-gradient(135deg, #FFD60A, #FF9F1C)' },
-    { icon: '💚', label: 'Health', desc: 'Health Tips', path: '/health', color: 'linear-gradient(135deg, #64D2FF, #30D158)' },
+    { icon: '🎬', label: 'Movies', desc: `${stats.videos} Videos`, path: '/videos', gradient: 'linear-gradient(135deg, #FF375F, #FF6B6B)' },
+    { icon: '📸', label: 'Photos', desc: `${stats.photos} Photos`, path: '/photos', gradient: 'linear-gradient(135deg, #64D2FF, #5AC8FA)' },
+    { icon: '🎯', label: 'Reels', desc: `${stats.reels} Reels`, path: '/gossips', gradient: 'linear-gradient(135deg, #BF5AF2, #AF52DE)' },
+    { icon: '💬', label: 'Chat', desc: 'Family Chat', path: '/chats', gradient: 'linear-gradient(135deg, #30D158, #34C759)' },
   ];
 
   return (
-    <div className="page-wrapper" style={{ paddingBottom: 110 }}>
+    <div className="page-wrapper">
       <div className="container">
-        {/* Header */}
-        <div style={{ padding: '20px 0', textAlign: 'center' }}>
+        {/* Welcome Header */}
+        <div style={{ textAlign: 'center', padding: '20px 0 28px' }}>
           <h1 style={{ 
-            fontSize: '2.8rem', 
-            fontWeight: 800, 
+            fontSize: '2.5rem', 
+            fontWeight: 900, 
             letterSpacing: '-0.03em',
             background: 'linear-gradient(135deg, #0A84FF, #BF5AF2)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
-            marginBottom: 6
+            marginBottom: 4
           }}>
             ILYNECT
           </h1>
           <div style={{ 
-            fontSize: '0.68rem', 
+            fontSize: '0.65rem', 
             fontWeight: 700, 
             color: 'var(--text-muted)', 
-            letterSpacing: 4,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 10
+            letterSpacing: 3,
           }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#30D158' }} />
             FAMILY CONNECT
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#30D158' }} />
           </div>
         </div>
 
         {/* Welcome Card */}
         <div style={{ marginBottom: 28 }}>
           <div className="glass-elevated" style={{ 
-            padding: '22px',
-            background: 'linear-gradient(135deg, rgba(10, 132, 255, 0.08), rgba(191, 90, 242, 0.04))'
+            padding: '20px',
+            background: 'linear-gradient(135deg, rgba(10, 132, 255, 0.1), rgba(191, 90, 242, 0.05))',
+            border: '1px solid var(--apple-border-light)',
+            borderRadius: 24,
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-              <div className="wave-hand" style={{ 
-                width: 58, 
-                height: 58, 
+              <div style={{ 
+                width: 54, 
+                height: 54, 
                 borderRadius: '50%', 
                 background: 'linear-gradient(135deg, #0A84FF, #BF5AF2)',
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center', 
-                fontSize: '1.8rem',
-                boxShadow: '0 10px 25px rgba(10, 132, 255, 0.3)'
+                fontSize: '1.6rem',
+                boxShadow: '0 8px 20px rgba(10, 132, 255, 0.3)',
               }}>
-                👋
+                <span className="wave-hand">👋</span>
               </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '1.7rem', fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 4 }}>
+              <div style={{ flex: 1, textAlign: 'left' }}>
+                <div style={{ fontSize: '1.4rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 4 }}>
                   Hello, {user?.displayName || user?.name || 'Family'}!
                 </div>
-                <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
                   Stay connected with your loved ones
                 </div>
               </div>
@@ -136,12 +97,15 @@ export default function HomePage() {
         {/* Quick Access */}
         <div style={{ marginBottom: 28 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <h2 style={{ fontSize: '0.95rem', fontWeight: 700, letterSpacing: 0.5 }}>Quick Access</h2>
+            <h2 style={{ fontSize: '0.9rem', fontWeight: 800, letterSpacing: 0.5 }}>Quick Access</h2>
             <Link to="/upload" style={{ 
-              fontSize: '0.75rem', 
+              fontSize: '0.8rem', 
               color: '#0A84FF', 
               fontWeight: 700,
-              textDecoration: 'none'
+              textDecoration: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
             }}>
               + Upload
             </Link>
@@ -152,78 +116,48 @@ export default function HomePage() {
               <Link 
                 key={card.path} 
                 to={card.path} 
-                className="quick-card animate-bounce-in"
+                className="quick-card"
                 style={{ 
                   animationDelay: `${index * 0.06}s`
                 }}
               >
                 <div 
                   className="quick-card-icon"
-                  style={{ background: card.color }}
+                  style={{ background: card.gradient }}
                 >
                   {card.icon}
                 </div>
-                <div className="quick-card-label" style={{ fontWeight: 600 }}>{card.label}</div>
-                <div className="quick-card-sub" style={{ fontWeight: 500 }}>{card.desc}</div>
+                <div className="quick-card-label">{card.label}</div>
+                <div className="quick-card-sub">{card.desc}</div>
               </Link>
             ))}
           </div>
         </div>
 
-        {/* Daily Content */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          {dailyFact && (
-            <Link to="/education" style={{ textDecoration: 'none' }}>
-              <div className="glass" style={{ borderRadius: 20, padding: 18 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                  <span style={{ fontSize: '1.3rem' }}>💡</span>
-                  <span style={{ fontSize: '0.65rem', color: '#FFD60A', fontWeight: 700, letterSpacing: 1 }}>
-                    DAILY FACT
-                  </span>
-                </div>
-                <div style={{ fontSize: '0.95rem', color: 'var(--text-primary)', lineHeight: 1.5 }}>
-                  {dailyFact}
-                </div>
-              </div>
-            </Link>
-          )}
-
-          {healthTip && (
-            <Link to="/health" style={{ textDecoration: 'none' }}>
-              <div className="glass" style={{ borderRadius: 20, padding: 18 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                  <span style={{ fontSize: '1.3rem' }}>💚</span>
-                  <span style={{ fontSize: '0.65rem', color: '#30D158', fontWeight: 700, letterSpacing: 1 }}>
-                    HEALTH TIP
-                  </span>
-                </div>
-                <div style={{ fontSize: '0.95rem', color: 'var(--text-primary)', lineHeight: 1.5 }}>
-                  {healthTip}
+        {/* Activity Card */}
+        <div 
+          className="glass" 
+          style={{ borderRadius: 20, padding: 18, cursor: 'pointer' }} 
+          onClick={() => navigate('/history')}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <span style={{ fontSize: '1.4rem' }}>📊</span>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>Your Activity</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 500 }}>
+                  View what you've watched
                 </div>
               </div>
-            </Link>
-          )}
-
-          <div className="glass" style={{ borderRadius: 20, padding: 18 }} onClick={() => navigate('/history')}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <span style={{ fontSize: '1.4rem' }}>📊</span>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>Your Activity</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>
-                    View what you've watched
-                  </div>
-                </div>
-              </div>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--text-muted)">
-                <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
-              </svg>
             </div>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--text-muted)">
+              <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+            </svg>
           </div>
         </div>
 
         {/* Footer */}
-        <div style={{ textAlign: 'center', marginTop: 40, marginBottom: 20, paddingTop: 20, borderTop: '1px solid var(--apple-border)' }}>
+        <div style={{ textAlign: 'center', marginTop: 40, marginBottom: 20, paddingTop: 20, borderTop: '1px solid var(--apple-border-light)' }}>
           <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: 1, marginBottom: 6 }}>
             DESIGNED FOR OUR FAMILY
           </div>

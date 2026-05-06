@@ -6,8 +6,75 @@ export const useSettings = () => useContext(SettingsContext);
 
 export const SettingsProvider = ({ children }) => {
   const [theme, setTheme] = useState(() => localStorage.getItem('ilynect_theme') || 'dark');
-  const [bgcolor, setBgcolor] = useState(() => localStorage.getItem('ilynect_bgcolor') || '');
-  const [t, setT] = useState({
+  const [language, setLanguage] = useState(() => localStorage.getItem('ilynect_lang') || 'en');
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('ilynect_theme', theme);
+  }, [theme]);
+
+  useEffect(() => {
+    localStorage.setItem('ilynect_lang', language);
+  }, [language]);
+
+  const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  const toggleLanguage = () => setLanguage(prev => prev === 'en' ? 'te' : 'en');
+
+  const t = language === 'te' ? {
+    home: 'హోమ్',
+    movies: 'సినిమాలు',
+    photos: 'ఫోటోలు',
+    reels: 'రీల్స్',
+    upload: 'అప్‌లోడ్',
+    chat: 'చాట్',
+    profile: 'ప్రొఫైల్',
+    downloads: 'డౌన్‌లోడ్స్',
+    history: 'చరిత్ర',
+    search: 'వెతకండి...',
+    hello: 'హలో',
+    stay_connected: 'మీ ప్రియమైన వారితో అనుసంధానంగా ఉండండి',
+    quick_access: 'త్వరిత యాక్సెస్',
+    your_activity: 'మీ కార్యాచరణ',
+    view_watched: 'మీరు చూసిన వాటిని చూడండి',
+    ask_health_ai: 'ఆరోగ్య AI ని అడగండి',
+    ask_edu_ai: 'విద్య AI ని అడగండి',
+    ask_placeholder: 'మీ ప్రశ్న అడగండి...',
+    health: 'ఆరోగ్యం',
+    education: 'విద్య',
+    ready_to_watch: 'చూడటానికి సిద్ధంగా ఉన్నారా?',
+    watch_online: 'ఆన్‌లైన్‌లో చూడండి',
+    download: 'డౌన్‌లోడ్',
+    share: 'షేర్',
+    delete: 'తొలగించు',
+    cancel: 'రద్దు',
+    confirm: 'నిర్ధారించు',
+    loading: 'లోడ్ అవుతోంది...',
+    error: 'లోపం',
+    success: 'విజయం',
+    enter_name: 'మీ పేరు నమోదు చేయండి',
+    enter_email: 'మీ ఇమెయిల్ నమోదు చేయండి',
+    login: 'లాగిన్',
+  } : {
+    home: 'Home',
+    movies: 'Movies',
+    photos: 'Photos',
+    reels: 'Reels',
+    upload: 'Upload',
+    chat: 'Chat',
+    profile: 'Profile',
+    downloads: 'Downloads',
+    history: 'History',
+    search: 'Search...',
+    hello: 'Hello',
+    stay_connected: 'Stay connected with your loved ones',
+    quick_access: 'Quick Access',
+    your_activity: 'Your Activity',
+    view_watched: "View what you've watched",
+    ask_health_ai: 'Ask Health AI',
+    ask_edu_ai: 'Ask Education AI',
+    ask_placeholder: 'Ask your question...',
+    health: 'Health',
+    education: 'Education',
     ready_to_watch: 'Ready to watch?',
     watch_online: 'Watch Online',
     download: 'Download',
@@ -21,30 +88,17 @@ export const SettingsProvider = ({ children }) => {
     enter_name: 'Enter your name',
     enter_email: 'Enter your email',
     login: 'Login',
-    upload: 'Upload',
-  });
-
-  useEffect(() => {
-    document.body.setAttribute('data-theme', theme);
-    if (bgcolor) {
-      document.body.setAttribute('data-bgcolor', bgcolor);
-    } else {
-      document.body.removeAttribute('data-bgcolor');
-    }
-    localStorage.setItem('ilynect_theme', theme);
-    localStorage.setItem('ilynect_bgcolor', bgcolor);
-  }, [theme, bgcolor]);
-
-  const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
-  const toggleBgcolor = (bg) => setBgcolor(prev => prev === bg ? '' : bg);
+  };
 
   return (
     <SettingsContext.Provider value={{
       theme,
-      bgcolor,
+      setTheme,
+      language,
+      setLanguage,
       t,
       toggleTheme,
-      toggleBgcolor,
+      toggleLanguage,
     }}>
       {children}
     </SettingsContext.Provider>

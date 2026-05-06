@@ -1,7 +1,7 @@
 const IS_PRODUCTION = import.meta.env.PROD;
 
 const RENDER_API_URL = import.meta.env.VITE_API_URL || "https://ilynect-2.onrender.com/api";
-const LOCAL_API_URL = "http://10.40.176.90:3001/api";
+const LOCAL_API_URL = "http://localhost:3001/api";
 
 export const API_BASE_URL = IS_PRODUCTION ? RENDER_API_URL : LOCAL_API_URL;
 
@@ -12,8 +12,6 @@ export const ENDPOINTS = {
   VIDEOS: `${API_BASE_URL}/videos`,
   PHOTOS: `${API_BASE_URL}/photos`,
   CHATS: `${API_BASE_URL}/chats`,
-  DAILY: `${API_BASE_URL}/daily`,
-  AI_ASK: `${API_BASE_URL}/ai/ask`,
   PRESENCE: `${API_BASE_URL}/presence`,
   ONLINE_USERS: `${API_BASE_URL}/presence/online`,
   HISTORY: (userId) => `${API_BASE_URL}/history/${userId}`,

@@ -5,48 +5,42 @@ import { useSettings } from '../contexts/SettingsContext';
 
 export default function Navbar() {
   const { user } = useAuth();
-  const { language, setLanguage, theme, setTheme, t } = useSettings();
+  const { theme, toggleTheme, t } = useSettings();
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
+    const handleScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const isHome = location.pathname === '/';
-
   return (
     <nav className={`navbar ${scrolled ? 'scrolled' : ''}`}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-        <Link to="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
-          <img
-            src="/logo.jpeg"
-            alt="ILYNECT"
-            className="nav-logo"
-            style={{ width: 34, height: 34, borderRadius: '50%', border: '1px solid var(--border-glass)' }}
-            onError={(e) => { e.target.src = "/logo.png"; }}
-          />
-          {!isHome && <span style={{ marginLeft: 8, fontWeight: 900, fontSize: '1rem', color: 'var(--royal-purple)' }}>ILYNECT</span>}
-        </Link>
-      </div>
+      <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
+        <img
+          src="/logo.png"
+          alt="ILYNECT"
+          className="nav-logo"
+          onError={(e) => { e.target.style.display = 'none'; }}
+        />
+        <span style={{ fontWeight: 900, fontSize: '1.15rem', color: 'var(--apple-blue)', letterSpacing: '-0.02em' }}>ILYNECT</span>
+      </Link>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        {/* Theme */}
-        <button className="nav-icon-btn" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+        <button className="nav-icon-btn" onClick={toggleTheme} aria-label="Toggle theme">
           {theme === 'dark' ? '☀️' : '🌙'}
         </button>
 
         {user && (
           <Link to="/profile" style={{ textDecoration: 'none' }}>
             <div style={{ 
-              width: 38, height: 38, borderRadius: '50%', 
-              background: 'linear-gradient(135deg, var(--primary-pink), var(--moody-mauve))', 
+              width: 36, height: 36, borderRadius: '50%', 
+              background: 'linear-gradient(135deg, var(--apple-purple), var(--apple-pink))', 
               display: 'flex', alignItems: 'center', justifyContent: 'center', 
-              fontSize: '1.2rem', color: '#fff', border: '2px solid rgba(255,255,255,0.2)'
+              fontSize: '1.1rem', color: '#fff'
             }}>
-               👤
+              👤
             </div>
           </Link>
         )}
