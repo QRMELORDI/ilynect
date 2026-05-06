@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const scraper = require('../services/scraper');
-const { verifyToken } = require('../middleware/auth');
+const { authenticateToken } = require('../middleware/auth');
 
 // Get movies list
 router.get('/', async (req, res) => {
@@ -20,7 +20,7 @@ router.post('/details', async (req, res) => {
 });
 
 // Admin only: Update domain
-router.post('/config', verifyToken, async (req, res) => {
+router.post('/config', authenticateToken, async (req, res) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Admin only' });
   }
