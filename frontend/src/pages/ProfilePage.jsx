@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
-import { getHistory } from '../services/api';
+import { getHistory, updateMovieRulzConfig } from '../services/api';
 
 const FLOWERS = ['🌸','🌹','🌻','🌺','🌷','🌼','💐','🌿','🍀','🌾'];
 
@@ -13,6 +13,8 @@ export default function ProfilePage() {
   const [history, setHistory] = useState([]);
   const [editing, setEditing] = useState(false);
   const [newName, setNewName] = useState(user?.name || user?.displayName || '');
+  const [newDomain, setNewDomain] = useState('https://www.5movierulz.camera');
+  const [updatingDomain, setUpdatingDomain] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,6 +28,21 @@ export default function ProfilePage() {
       await updateName(user.uid, newName.trim());
     }
     setEditing(false);
+  };
+
+  const handleUpdateDomain = async () => {
+    if (!newDomain.trim()) return;
+    setUpdatingDomain(true);
+    try {
+      const data = await updateMovieRulzConfig(newDomain.trim());
+      if (data.success) {
+        alert('MovieRulz domain updated successfully!');
+      }
+    } catch (err) {
+      alert('Failed to update domain: ' + err.message);
+    } finally {
+      setUpdatingDomain(false);
+    }
   };
 
   const handleLogout = () => {
@@ -261,6 +278,37 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
+
+        {isAdmin && (
+          <div style={{ marginBottom: 24 }}>
+            <h2 style={{ fontSize: '0.85rem', fontWeight: 800, marginBottom: 12, letterSpacing: 1, color: 'var(--text-muted)' }}>
+              ADMIN: MOVIERULZ CONFIG
+            </h2>
+            <div className="glass" style={{ padding: 16 }}>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: 10, fontWeight: 600 }}>
+                Current MovieRulz Domain:
+              </div>
+              <input 
+                className="input"
+                placeholder="https://www.5movierulz.camera"
+                value={newDomain}
+                onChange={(e) => setNewDomain(e.target.value)}
+                style={{ marginBottom: 12, fontSize: '0.85rem' }}
+              />
+              <button 
+                className="btn btn-primary" 
+                onClick={handleUpdateDomain}
+                disabled={updatingDomain}
+                style={{ width: '100%', padding: '12px' }}
+              >
+                {updatingDomain ? 'UPDATING...' : 'UPDATE DOMAIN'}
+              </button>
+              <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: 10, lineHeight: 1.4 }}>
+                💡 Tip: If MovieRulz changes their domain, just paste the new link here and click Update.
+              </div>
+            </div>
+          </div>
+        )}
 
         <div style={{ marginBottom: 24 }}>
           <h2 style={{ fontSize: '0.85rem', fontWeight: 800, marginBottom: 12, letterSpacing: 1, color: 'var(--text-muted)' }}>

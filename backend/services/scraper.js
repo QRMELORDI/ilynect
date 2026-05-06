@@ -1,11 +1,28 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
+const db = require('../db/database');
 
-// MovieRulz Domain (can be updated by admin)
+// Initial default
 let MOVIERULZ_DOMAIN = 'https://www.5movierulz.camera';
 
+// Load from DB on startup
+try {
+  const row = db.prepare("SELECT value FROM settings WHERE key = ?").get('movierulz_domain');
+  if (row) MOVIERULZ_DOMAIN = row.value;
+} catch (e) {
+  console.error('Failed to load movierulz_domain from DB:', e.message);
+}
+
 const setDomain = (domain) => {
-  if (domain) MOVIERULZ_DOMAIN = domain.replace(/\/$/, '');
+  if (domain) {
+    MOVIERULZ_DOMAIN = domain.replace(/\/$/, '');
+    try {
+      db.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)")
+        .run('movierulz_domain', MOVIERULZ_DOMAIN);
+    } catch (e) {
+      console.error('Failed to save movierulz_domain to DB:', e.message);
+    }
+  }
 };
 
 const getMovies = async (page = 1, searchQuery = '') => {

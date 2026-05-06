@@ -130,6 +130,11 @@ const schema = `
     user_name TEXT,
     last_seen INTEGER DEFAULT (strftime('%s','now'))
   );
+
+  CREATE TABLE IF NOT EXISTS settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+  );
 `;
 
 db.exec(schema);
