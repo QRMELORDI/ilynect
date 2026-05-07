@@ -59,12 +59,12 @@ export default function MovierulzPage() {
     }
   };
 
-  const handleDownload = async (movie) => {
-    if (!movie.easysyncrLink) return;
+  const handleDownload = async (link) => {
+    if (!link) return;
     try {
-      await recordView(movie.id, user.id, user.name);
-      await recordDownload(movie.id, user.id, user.name, 'movie');
-      await Browser.open({ url: movie.easysyncrLink });
+      await recordView(selectedMovie.id, user.id, user.name);
+      await recordDownload(selectedMovie.id, user.id, user.name, 'movie');
+      await Browser.open({ url: link });
     } catch (err) {
       console.error('Download error:', err);
     }
@@ -143,7 +143,7 @@ export default function MovierulzPage() {
         <div className="lightbox" onClick={() => setSelectedMovie(null)}>
           <button className="lightbox-close" onClick={() => setSelectedMovie(null)}>✕</button>
           <div className="lightbox-content" onClick={e => e.stopPropagation()} style={{ overflowY: 'auto', padding: '100px 20px 40px' }}>
-            <div className="container" style={{ maxWidth: 400 }}>
+            <div className="container" style={{ maxWidth: 450 }}>
               <div style={{ borderRadius: 20, overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.8)', marginBottom: 25 }}>
                 <img src={selectedMovie.poster || selectedMovie.image} alt={selectedMovie.title} style={{ width: '100%', display: 'block' }} />
               </div>
@@ -153,7 +153,7 @@ export default function MovierulzPage() {
                 {selectedMovie.description}
               </p>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {selectedMovie.trailerLink && (
                   <button 
                     className="upload-btn-3d" 
@@ -165,18 +165,38 @@ export default function MovierulzPage() {
                   </button>
                 )}
 
-                {selectedMovie.easysyncrLink ? (
+                {selectedMovie.easysyncrLink && (
                   <button 
                     className="upload-btn-3d" 
-                    onClick={() => handleDownload(selectedMovie)}
-                    style={{ background: 'linear-gradient(145deg, #30D158, #28B34B)', boxShadow: '0 6px 0 #1B8C3A' }}
+                    onClick={() => handleDownload(selectedMovie.easysyncrLink)}
+                    style={{ background: 'linear-gradient(145deg, #0A84FF, #0071E3)', boxShadow: '0 6px 0 #0056CC' }}
                   >
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
-                    DOWNLOAD NOW
+                    DIRECT DOWNLOAD
                   </button>
-                ) : (
+                )}
+
+                {selectedMovie.magnetLinks && selectedMovie.magnetLinks.length > 0 && (
+                  <div style={{ marginTop: 10 }}>
+                    <div style={{ fontSize: '0.7rem', fontWeight: 900, color: 'var(--text-muted)', marginBottom: 8, letterSpacing: 1 }}>TORRENT LINKS</div>
+                    <div style={{ display: 'grid', gap: 10 }}>
+                      {selectedMovie.magnetLinks.map((m, idx) => (
+                        <button 
+                          key={idx}
+                          className="btn btn-secondary" 
+                          onClick={() => handleDownload(m.url)}
+                          style={{ justifyContent: 'flex-start', fontSize: '0.8rem', padding: '12px 15px', borderRadius: 12, background: 'rgba(255,255,255,0.05)' }}
+                        >
+                          🧲 {m.title.replace('Download ', '').substring(0, 30)}...
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {!selectedMovie.easysyncrLink && (!selectedMovie.magnetLinks || selectedMovie.magnetLinks.length === 0) && (
                   <div className="glass" style={{ padding: 20, textAlign: 'center', color: 'var(--apple-pink)', fontWeight: 800 }}>
-                    LINK NOT AVAILABLE YET
+                    NO DOWNLOAD LINKS FOUND
                   </div>
                 )}
               </div>

@@ -19,6 +19,10 @@ export const ENDPOINTS = {
   DOWNLOAD: (type, id) => `${API_BASE_URL}/files/download/${type}/${id}`,
   PHOTO: (id) => `${API_BASE_URL}/files/photo/${id}`,
   MOVIERULZ: `${API_BASE_URL}/movierulz`,
+  DAILY: `${API_BASE_URL}/daily`,
+  COMMENTS: (contentId) => `${API_BASE_URL}/comments/${contentId}`,
+  ADD_COMMENT: `${API_BASE_URL}/comments`,
+  DELETE_COMMENT: (id) => `${API_BASE_URL}/comments/${id}`,
 };
 
 export default API_BASE_URL;

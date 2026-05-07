@@ -23,10 +23,12 @@ router.post('/login', async (req, res) => {
       const id = randomUUID();
       const color = avatarColors[Math.floor(Math.random() * avatarColors.length)];
       const avatarIndex = Math.floor(Math.random() * FLOWER_AVATARS.length);
+      const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'aviindo863@gmail.com').toLowerCase();
+      const role = cleanEmail === ADMIN_EMAIL ? 'admin' : 'user';
       
       await db.runAsync(
-        'INSERT INTO users (id, name, email, avatar_color, avatar_index) VALUES (?, ?, ?, ?, ?)', 
-        [id, cleanName, cleanEmail, color, avatarIndex]
+        'INSERT INTO users (id, name, email, role, avatar_color, avatar_index) VALUES (?, ?, ?, ?, ?, ?)', 
+        [id, cleanName, cleanEmail, role, color, avatarIndex]
       );
       
       user = await db.getAsync('SELECT * FROM users WHERE id = ?', [id]);

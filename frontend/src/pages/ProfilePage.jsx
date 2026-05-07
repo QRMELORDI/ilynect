@@ -17,9 +17,11 @@ export default function ProfilePage() {
   const [updatingDomain, setUpdatingDomain] = useState(false);
   const navigate = useNavigate();
 
+  const isAdmin = user?.role === 'admin' || user?.email === 'aviindo863@gmail.com';
+
   useEffect(() => {
     if (user?.id) {
-      getHistory(user.id).then(setHistory).catch(() => {});
+      getHistory(user.id).then(data => setHistory(data || [])).catch(() => {});
     }
     if (isAdmin) {
       getMovieRulzConfig().then(data => {
@@ -57,8 +59,7 @@ export default function ProfilePage() {
   };
 
   const flower = FLOWERS[user?.avatar_index || 0] || '🌸';
-  const isAdmin = user?.role === 'admin' || user?.email === 'aviindo863@gmail.com';
-  const APP_VERSION = '1.0.5';
+  const APP_VERSION = '1.1.2';
 
   return (
     <div className="page-wrapper" style={{ background: 'var(--bg-primary)', paddingBottom: 100 }}>
@@ -73,7 +74,7 @@ export default function ProfilePage() {
           fontWeight: 700,
           letterSpacing: 1
         }}>
-          VERSION 1.0.5 • ILYNECT PREMIUM
+          VERSION 1.1.2 • ILYNECT PREMIUM
           {isAdmin ? ' • ADMIN' : ''}
         </div>
         
@@ -278,7 +279,7 @@ export default function ProfilePage() {
                 <div className="list-item-sub">Sync latest changes from server</div>
               </div>
               <div style={{ fontSize: '0.6rem', fontWeight: 800, background: 'rgba(255,255,255,0.1)', padding: '4px 8px', borderRadius: 8, color: 'var(--text-muted)' }}>
-                v1.0.4
+                v1.1.2
               </div>
             </div>
           </div>

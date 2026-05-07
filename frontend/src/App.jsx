@@ -9,7 +9,7 @@ import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
 import VideosPage from './pages/VideosPage';
 import MovierulzPage from './pages/MovierulzPage';
-import GossipPage from './pages/GossipPage';
+import ReelsPage from './pages/ReelsPage';
 import PhotosPage from './pages/PhotosPage';
 import UploadPage from './pages/UploadPage';
 import HistoryPage from './pages/HistoryPage';
@@ -18,7 +18,7 @@ import ProfilePage from './pages/ProfilePage';
 import { checkVersion, setUserOnline } from './services/api';
 import './index.css';
 
-const APP_VERSION = '1.1.0';
+const APP_VERSION = '1.2.0';
 
 function AppRoutes() {
   const { user, loading } = useAuth();
@@ -82,7 +82,7 @@ function AppRoutes() {
         <Route path="/" element={<HomePage />} />
         <Route path="/videos" element={<VideosPage />} />
         <Route path="/movierulz" element={<MovierulzPage />} />
-        <Route path="/gossips" element={<GossipPage />} />
+        <Route path="/reels" element={<ReelsPage />} />
         <Route path="/photos" element={<PhotosPage />} />
         <Route path="/upload" element={<UploadPage />} />
         <Route path="/history" element={<HistoryPage />} />

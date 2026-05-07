@@ -38,7 +38,8 @@ db.allAsync = (sql, params = []) => {
   }
 };
 
-db.pragma('journal_mode = WAL');
+// db.pragma('journal_mode = WAL');
+db.pragma('journal_mode = DELETE');
 db.pragma('foreign_keys = ON');
 
 // Schema initialization
@@ -87,7 +88,9 @@ const schema = `
   CREATE TABLE IF NOT EXISTS daily_content (
     id TEXT PRIMARY KEY,
     type TEXT NOT NULL,
-    content_json TEXT NOT NULL,
+    content TEXT,
+    content_json TEXT,
+    language TEXT DEFAULT 'en',
     active_date TEXT NOT NULL
   );
 
@@ -157,8 +160,16 @@ db.exec(schema);
 // Migrations for existing databases
 try { db.exec("ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'user'"); } catch {}
 try { db.exec("ALTER TABLE users ADD COLUMN avatar_index INTEGER DEFAULT 0"); } catch {}
+try { db.exec("ALTER TABLE videos ADD COLUMN sub_type TEXT DEFAULT 'movie'"); } catch {}
 try { db.exec("ALTER TABLE videos ADD COLUMN thumbnail TEXT DEFAULT ''"); } catch {}
 try { db.exec("ALTER TABLE videos ADD COLUMN drive_file_id TEXT"); } catch {}
+try { db.exec("ALTER TABLE videos ADD COLUMN duration_sec REAL DEFAULT 0"); } catch {}
+try { db.exec("ALTER TABLE videos ADD COLUMN original_name TEXT"); } catch {}
+try { db.exec("ALTER TABLE videos ADD COLUMN mime_type TEXT"); } catch {}
+try { db.exec("ALTER TABLE videos ADD COLUMN uploaded_by TEXT"); } catch {}
+try { db.exec("ALTER TABLE videos ADD COLUMN uploader_name TEXT"); } catch {}
+try { db.exec("ALTER TABLE videos ADD COLUMN viewers TEXT DEFAULT '[]'"); } catch {}
+try { db.exec("ALTER TABLE videos ADD COLUMN editors TEXT DEFAULT '[]'"); } catch {}
 try { db.exec("ALTER TABLE photos ADD COLUMN drive_file_id TEXT"); } catch {}
 
 console.log('✅ ILYNECT Database Initialized (better-sqlite3)');

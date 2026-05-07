@@ -2,6 +2,20 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db/database');
 
+router.get('/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { limit = 100, type } = req.query;
+    let sql = 'SELECT * FROM history WHERE user_id = ?';
+    const params = [userId];
+    if (type) { sql += ' AND content_type = ?'; params.push(type); }
+    sql += ' ORDER BY created_at DESC LIMIT ?';
+    params.push(parseInt(limit));
+    const history = await db.allAsync(sql, params);
+    res.json({ history });
+  } catch (err) { res.status(500).json({ error: 'Server error' }); }
+});
+
 router.get('/', async (req, res) => {
   try {
     const { userId, limit = 100, type } = req.query;

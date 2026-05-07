@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
-import { getWatchPosition, saveWatchPosition } from '../services/api';
+import { getWatchPosition, saveWatchPosition, getComments, addComment, deleteComment } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+
+const EMOJIS = ['❤️', '🔥', '👏', '😂', '😍', '😮', '😢', '💯', '🙌', '🎉', '🌟', '✨'];
 
 const VideoPlayer = forwardRef(function VideoPlayer({ video, onClose }, ref) {
   const videoRef = useRef(null);
@@ -12,6 +14,10 @@ const VideoPlayer = forwardRef(function VideoPlayer({ video, onClose }, ref) {
   const [volume, setVolume] = useState(1);
   const [buffered, setBuffered] = useState(0);
   const [fullscreen, setFullscreen] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [comments, setComments] = useState([]);
+  const [commentText, setCommentText] = useState('');
+  const [sendingComment, setSendingComment] = useState(false);
   const controlsTimeout = useRef();
   const { user } = useAuth();
 
@@ -32,12 +38,47 @@ const VideoPlayer = forwardRef(function VideoPlayer({ video, onClose }, ref) {
       }
     }).catch(() => {});
 
+    loadComments();
+
     return () => {
       if (videoRef.current && currentTime > 0) {
         saveWatchPosition(video.id, user?.uid, currentTime).catch(() => {});
       }
     };
   }, [video?.id]);
+
+  const loadComments = async () => {
+    try {
+      const data = await getComments(video.id);
+      setComments(data || []);
+    } catch {}
+  };
+
+  const handleAddComment = async (e) => {
+    if (e) e.preventDefault();
+    if (!commentText.trim() || sendingComment) return;
+    setSendingComment(true);
+    try {
+      const res = await addComment(video.id, user.id, user.name, commentText);
+      if (res.success) {
+        setComments(prev => [res.comment, ...prev]);
+        setCommentText('');
+      }
+    } catch (err) {
+      alert('Failed to post comment');
+    } finally {
+      setSendingComment(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    if (window.confirm('Delete this comment?')) {
+      try {
+        await deleteComment(commentId, user.id);
+        setComments(prev => prev.filter(c => c.id !== commentId));
+      } catch {}
+    }
+  };
 
   const handlePlayPause = () => {
     if (videoRef.current) {
@@ -171,30 +212,53 @@ const VideoPlayer = forwardRef(function VideoPlayer({ video, onClose }, ref) {
           </div>
         </div>
 
-        <button
-          onClick={handleFullscreen}
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: '50%',
-            background: 'rgba(255,255,255,0.15)',
-            backdropFilter: 'blur(20px)',
-            border: 'none',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            color: '#fff'
-          }}
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-            {fullscreen ? (
-              <path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>
-            ) : (
-              <path d="M7 14H5v5h5v-2H7v-3zm12-7h-2v5h5V8h-3v-2zM5 10h2v3h3V8H5v2zm0 5h2v2h3v-2H5v2z"/>
-            )}
-          </svg>
-        </button>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button
+            onClick={() => setShowComments(true)}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(20px)',
+              border: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              color: '#fff'
+            }}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M21 15c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14l4-4h14zM18 7v2H6V7h12zm-4 4H6V9h8v2zm2 4H6v-2h10v2z"/>
+            </svg>
+          </button>
+
+          <button
+            onClick={handleFullscreen}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              background: 'rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(20px)',
+              border: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              color: '#fff'
+            }}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              {fullscreen ? (
+                <path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>
+              ) : (
+                <path d="M7 14H5v5h5v-2H7v-3zm12-7h-2v5h5V8h-3v-2zM5 10h2v3h3V8H5v2zm0 5h2v2h3v-2H5v2z"/>
+              )}
+            </svg>
+          </button>
+        </div>
       </div>
 
       <div 
@@ -360,6 +424,88 @@ const VideoPlayer = forwardRef(function VideoPlayer({ video, onClose }, ref) {
         }}
         playsInline
       />
+
+      {/* Comments Sidebar/Drawer */}
+      {showComments && (
+        <div 
+          style={{ 
+            position: 'absolute', 
+            inset: 0, 
+            zIndex: 100, 
+            background: 'rgba(0,0,0,0.5)', 
+            display: 'flex', 
+            justifyContent: 'flex-end' 
+          }} 
+          onClick={() => setShowComments(false)}
+        >
+          <div 
+            style={{ 
+              width: '100%', 
+              maxWidth: 400, 
+              background: 'var(--apple-bg-secondary)', 
+              height: '100%', 
+              display: 'flex', 
+              flexDirection: 'column',
+              boxShadow: '-10px 0 40px rgba(0,0,0,0.5)',
+              animation: 'slideInRight 0.3s ease'
+            }} 
+            onClick={e => e.stopPropagation()}
+          >
+             <div style={{ padding: '24px 20px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontWeight: 900, fontSize: '1.1rem', color: '#fff' }}>COMMENTS</span>
+                <button onClick={() => setShowComments(false)} style={{ background: 'none', border: 'none', color: 'var(--apple-blue)', fontWeight: 800 }}>CLOSE</button>
+             </div>
+
+             <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
+                {comments.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: 40, opacity: 0.5, color: '#fff' }}>No comments yet.</div>
+                ) : (
+                  comments.map(c => (
+                    <div key={c.id} style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
+                       <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--apple-blue)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.8rem', color: '#fff' }}>
+                          {c.user_name?.[0]?.toUpperCase()}
+                       </div>
+                       <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: '0.75rem', fontWeight: 900, opacity: 0.7, marginBottom: 2, color: '#fff' }}>{c.user_name}</div>
+                          <div style={{ fontSize: '0.9rem', color: '#fff', lineHeight: 1.4 }}>{c.text}</div>
+                       </div>
+                       {(c.user_id === user?.id || user?.role === 'admin') && (
+                         <button onClick={() => handleDeleteComment(c.id)} style={{ background: 'none', border: 'none', color: 'var(--apple-red)', fontSize: '0.7rem', fontWeight: 800 }}>DEL</button>
+                       )}
+                    </div>
+                  ))
+                )}
+             </div>
+
+             <div style={{ padding: '20px', background: 'rgba(0,0,0,0.2)', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                <div style={{ display: 'flex', gap: 10, marginBottom: 15, overflowX: 'auto', paddingBottom: 5 }}>
+                   {EMOJIS.map(e => (
+                     <span key={e} onClick={() => setCommentText(prev => prev + e)} style={{ fontSize: '1.5rem', cursor: 'pointer' }}>{e}</span>
+                   ))}
+                </div>
+                <form onSubmit={handleAddComment} style={{ display: 'flex', gap: 10 }}>
+                   <input 
+                     className="input" 
+                     placeholder="Add a comment..." 
+                     value={commentText}
+                     onChange={e => setCommentText(e.target.value)}
+                     style={{ flex: 1, background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff' }}
+                   />
+                   <button className="btn btn-primary" type="submit" disabled={!commentText.trim() || sendingComment}>
+                      SEND
+                   </button>
+                </form>
+             </div>
+          </div>
+        </div>
+      )}
+      
+      <style>{`
+        @keyframes slideInRight {
+          from { transform: translateX(100%); }
+          to { transform: translateX(0); }
+        }
+      `}</style>
     </div>
   );
 });

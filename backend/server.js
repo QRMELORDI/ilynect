@@ -11,7 +11,7 @@ const db = require('./db/database');
 const app = express();
 const server = http.createServer(app);
 
-const PORT = process.env.PORT || 3001;
+const PORT = Number(process.env.PORT) || 3001;
 const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'aviindo863@gmail.com').toLowerCase();
 
 // Middleware
@@ -40,11 +40,12 @@ app.use('/api/daily', require('./routes/daily'));
 app.use('/api/files', require('./routes/files'));
 app.use('/api/presence', require('./routes/presence'));
 app.use('/api/history', require('./routes/history'));
+app.use('/api/comments', require('./routes/comments'));
 app.use('/api/version', require('./routes/version'));
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', time: new Date().toISOString(), version: '1.1.0' });
+  res.json({ status: 'ok', time: new Date().toISOString(), version: '1.1.2' });
 });
 
 

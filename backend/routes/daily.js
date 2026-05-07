@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db/database');
+const { randomUUID } = require('crypto');
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY || '';
 
@@ -15,18 +16,7 @@ router.get('/', async (req, res) => {
       rawContent = await db.allAsync(`SELECT * FROM daily_content WHERE active_date = ?`, [today]);
     }
 
-    // Convert array to a flat object for easier consumption
-    const content = {};
-    rawContent.forEach(item => {
-      content[item.type] = item.content;
-    });
-
-    // Special handling for health tips (split string back to array)
-    if (content.health_tip) {
-      content.tips = content.health_tip.split('. ').filter(t => t.trim() !== '');
-    }
-    
-    res.json(content);
+    res.json(rawContent);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -73,8 +63,8 @@ async function generateDailyContentWithAI(date) {
 
     for (const item of mappings) {
       await db.runAsync(
-        `INSERT INTO daily_content (type, content, language, active_date) VALUES (?, ?, ?, ?)`,
-        [item.type, item.content, item.lang, date]
+        `INSERT INTO daily_content (id, type, content, language, active_date) VALUES (?, ?, ?, ?, ?)`,
+        [randomUUID(), item.type, item.content, item.lang, date]
       );
     }
   } catch (err) {
@@ -90,8 +80,8 @@ async function generateDailyContentWithAI(date) {
     ];
     for (const item of staticContent) {
       await db.runAsync(
-        `INSERT OR IGNORE INTO daily_content (type, content, language, active_date) VALUES (?, ?, ?, ?)`,
-        [item.type, item.content, item.lang, date]
+        `INSERT OR IGNORE INTO daily_content (id, type, content, language, active_date) VALUES (?, ?, ?, ?, ?)`,
+        [randomUUID(), item.type, item.content, item.lang, date]
       );
     }
   }

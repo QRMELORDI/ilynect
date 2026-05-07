@@ -248,7 +248,7 @@ export default function UploadPage() {
             <div style={{ color: 'var(--mint)', marginTop: 20, textAlign: 'center', fontSize: '0.9rem', fontWeight: 900, letterSpacing: 0.5 }}>
               UPLOAD VERIFIED & SAVED
               <div style={{ marginTop: 15 }}>
-                <button className="btn btn-secondary" style={{ width: '100%', justifyContent: 'center', borderRadius: 14 }} onClick={() => navigate(type === 'reels' ? '/gossips' : type === 'photo' ? '/photos' : '/videos')}>
+                <button className="btn btn-secondary" style={{ width: '100%', justifyContent: 'center', borderRadius: 14 }} onClick={() => navigate(type === 'reels' ? '/reels' : type === 'photo' ? '/photos' : '/videos')}>
                    VIEW NOW
                 </button>
               </div>

@@ -1,4 +1,3 @@
-const { google } = require('googleapis');
 const path = require('path');
 const fs = require('fs');
 
@@ -14,6 +13,7 @@ let drive = null;
 
 function getDrive() {
   if (!drive) {
+    const { google } = require('googleapis');
     let credentials;
     const envKey = process.env.GOOGLE_SERVICE_ACCOUNT;
     if (envKey) {

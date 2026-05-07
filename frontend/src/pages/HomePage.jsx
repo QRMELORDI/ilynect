@@ -8,9 +8,25 @@ export default function HomePage() {
   const [stats, setStats] = useState({ videos: 0, photos: 0, reels: 0 });
   const navigate = useNavigate();
 
+  const [updateInfo, setUpdateInfo] = useState(null);
+
   useEffect(() => {
     loadStats();
+    checkUpdate();
   }, []);
+
+  const checkUpdate = async () => {
+    try {
+      const { checkVersion } = await import('../services/api');
+      const data = await checkVersion();
+      // App version is 1.2.0. If server has higher, show update card.
+      if (data.version !== '1.2.0') {
+        setUpdateInfo(data);
+      }
+    } catch (err) {
+      console.error('Update check failed:', err);
+    }
+  };
 
   const loadStats = async () => {
     try {
@@ -29,8 +45,9 @@ export default function HomePage() {
 
   const quickCards = [
     { icon: '🌐', label: 'Browse', desc: `MovieRulz`, path: '/movierulz', gradient: 'linear-gradient(135deg, #0A84FF, #0071E3)' },
+    { icon: '🎬', label: 'Cinema', desc: `${stats.videos} Movies`, path: '/videos', gradient: 'linear-gradient(135deg, #FF375F, #FF2D55)' },
     { icon: '📸', label: 'Photos', desc: `${stats.photos} Photos`, path: '/photos', gradient: 'linear-gradient(135deg, #64D2FF, #5AC8FA)' },
-    { icon: '🎯', label: 'Reels', desc: `${stats.reels} Reels`, path: '/gossips', gradient: 'linear-gradient(135deg, #BF5AF2, #AF52DE)' },
+    { icon: '🎯', label: 'Reels', desc: `${stats.reels} Reels`, path: '/reels', gradient: 'linear-gradient(135deg, #BF5AF2, #AF52DE)' },
   ];
 
   return (
@@ -109,27 +126,77 @@ export default function HomePage() {
               + Upload
             </Link>
           </div>
-          
-          <div className="quick-grid">
-            {quickCards.map((card, index) => (
-              <Link 
-                key={card.path} 
-                to={card.path} 
-                className="quick-card"
-                style={{ 
-                  animationDelay: `${index * 0.06}s`
-                }}
+
+          {updateInfo && (
+            <div 
+              className="glass fade-up" 
+              style={{ 
+                background: 'linear-gradient(135deg, rgba(255, 59, 48, 0.1), rgba(255, 45, 85, 0.1))',
+                border: '1px solid rgba(255, 59, 48, 0.2)',
+                borderRadius: 20, 
+                padding: '20px', 
+                marginBottom: 24,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 15
+              }}
+            >
+              <div style={{ fontSize: '2rem' }}>🚀</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 900, color: '#FF3B30', fontSize: '0.9rem', marginBottom: 4 }}>NEW VERSION {updateInfo.version} AVAILABLE!</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>{updateInfo.message || 'Get the latest features and bug fixes.'}</div>
+              </div>
+              <button 
+                className="btn btn-primary" 
+                onClick={() => window.open(updateInfo.updateUrl, '_blank')}
+                style={{ background: '#FF3B30', padding: '8px 16px', fontSize: '0.75rem', borderRadius: 12 }}
               >
-                <div 
-                  className="quick-card-icon"
-                  style={{ background: card.gradient }}
-                >
-                  {card.icon}
-                </div>
-                <div className="quick-card-label">{card.label}</div>
-                <div className="quick-card-sub">{card.desc}</div>
+                UPDATE
+              </button>
+            </div>
+          )}
+          
+          <div className="quick-grid" style={{ gridTemplateColumns: '1fr', gap: 16 }}>
+            {/* Super Prominent MovieRulz */}
+            <Link to="/movierulz" className="quick-card pulse-glow" style={{ 
+              background: 'linear-gradient(135deg, #0A84FF, #0071E3)', 
+              padding: '24px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 20,
+              textAlign: 'left',
+              border: '1px solid rgba(255,255,255,0.2)'
+            }}>
+              <div style={{ fontSize: '2.5rem' }}>🌐</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 900, fontSize: '1.2rem', color: '#fff', marginBottom: 2 }}>BROWSE MOVIES</div>
+                <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.8)', fontWeight: 600 }}>Latest Telugu Cinema & Mirrors</div>
+              </div>
+              <div style={{ fontSize: '1.2rem', opacity: 0.5 }}>→</div>
+            </Link>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+              <Link to="/videos" className="quick-card" style={{ padding: '16px 12px' }}>
+                <div className="quick-card-icon" style={{ background: 'linear-gradient(135deg, #FF375F, #FF2D55)', width: 40, height: 40, fontSize: '1.2rem' }}>🎬</div>
+                <div className="quick-card-label" style={{ fontSize: '0.8rem' }}>Cinema</div>
+                <div className="quick-card-sub" style={{ fontSize: '0.65rem' }}>{stats.videos} Family</div>
               </Link>
-            ))}
+              <Link to="/gossips" className="quick-card" style={{ padding: '16px 12px' }}>
+                <div className="quick-card-icon" style={{ background: 'linear-gradient(135deg, #BF5AF2, #AF52DE)', width: 40, height: 40, fontSize: '1.2rem' }}>🎯</div>
+                <div className="quick-card-label" style={{ fontSize: '0.8rem' }}>Reels</div>
+                <div className="quick-card-sub" style={{ fontSize: '0.65rem' }}>Fun Moments</div>
+              </Link>
+              <Link to="/photos" className="quick-card" style={{ gridColumn: 'span 2', padding: '14px 20px' }}>
+                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div className="quick-card-icon" style={{ background: 'linear-gradient(135deg, #64D2FF, #5AC8FA)', margin: 0, width: 36, height: 36, fontSize: '1.1rem' }}>📸</div>
+                    <div style={{ textAlign: 'left', flex: 1 }}>
+                      <div className="quick-card-label" style={{ fontSize: '0.85rem' }}>Photos Gallery</div>
+                      <div className="quick-card-sub" style={{ fontSize: '0.7rem' }}>{stats.photos} Shared Memories</div>
+                    </div>
+                    <div style={{ fontSize: '1rem', opacity: 0.3 }}>→</div>
+                 </div>
+              </Link>
+            </div>
           </div>
         </div>
 

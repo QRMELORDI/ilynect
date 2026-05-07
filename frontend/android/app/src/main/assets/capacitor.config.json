@@ -1,5 +1,9 @@
 {
 	"appId": "com.ilynect.app",
 	"appName": "ILYNECT",
-	"webDir": "dist"
+	"webDir": "dist",
+	"server": {
+		"url": "https://ilynect-2.onrender.com",
+		"cleartext": true
+	}
 }

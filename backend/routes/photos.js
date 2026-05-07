@@ -121,6 +121,14 @@ router.delete('/:id', async (req, res) => {
     const filePath = path.join(__dirname, '..', 'uploads', 'photos', photo.filename);
     if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
     await db.runAsync('DELETE FROM photos WHERE id = ?', [req.params.id]);
+    
+    const { userId, userName } = req.body;
+    if (userId) {
+      await db.runAsync(
+        `INSERT INTO history (user_id, user_name, content_id, content_type, action, content_title) VALUES (?, ?, ?, 'photo', 'delete', ?)`,
+        [userId, userName || 'User', req.params.id, photo.title]
+      );
+    }
     res.json({ success: true });
   } catch (err) { res.status(500).json({ error: 'Server error' }); }
 });

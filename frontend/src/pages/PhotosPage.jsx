@@ -68,7 +68,7 @@ export default function PhotosPage() {
   };
 
   const handleDownload = (photo) => {
-    recordPhotoDownload(photo.id);
+    recordPhotoDownload(photo.id, user.id, user.name);
     const a = document.createElement('a');
     a.href = photo.downloadUrl || photo.photoUrl;
     a.download = photo.title || 'photo';
@@ -84,7 +84,7 @@ export default function PhotosPage() {
     }
     if (window.confirm('Delete this photo?')) {
       try {
-        await deletePhoto(photo.id);
+        await deletePhoto(photo.id, user.id, user.name);
         setCurrentIndex(-1);
         loadPhotos();
       } catch {}
@@ -96,7 +96,7 @@ export default function PhotosPage() {
   return (
     <div className="page-wrapper">
       <div className="container">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
           <h1 className="page-title">PHOTOS</h1>
           <button 
             className="nav-icon-btn" 
@@ -105,6 +105,20 @@ export default function PhotosPage() {
           >
             ADD
           </button>
+        </div>
+        
+        <div className="glass" style={{ 
+          display: 'inline-block',
+          padding: '8px 16px',
+          fontSize: '0.8rem', 
+          fontWeight: 900, 
+          color: 'var(--apple-blue)', 
+          marginBottom: 24,
+          borderRadius: 20,
+          letterSpacing: 1,
+          border: '1px solid var(--border-glass)'
+        }}>
+          ✨ {photos.length} SHARED MEMORIES
         </div>
 
         {loading ? (
@@ -117,8 +131,8 @@ export default function PhotosPage() {
         ) : (
           <div className="photo-gallery">
             {photos.map((photo, index) => (
-              <div key={photo.id} className="gallery-item" onClick={() => setCurrentIndex(index)}>
-                <img src={photo.photoUrl} alt={photo.title} loading="lazy" />
+              <div key={photo.id} className="gallery-item animate-scale-in" onClick={() => setCurrentIndex(index)} style={{ background: 'rgba(255,255,255,0.03)' }}>
+                <img src={photo.photoUrl} alt={photo.title} loading="lazy" style={{ objectFit: 'contain', width: '100%', height: '100%' }} />
               </div>
             ))}
           </div>
@@ -147,19 +161,18 @@ export default function PhotosPage() {
               src={currentPhoto.photoUrl}
               alt={currentPhoto.title}
               className={`lightbox-image ${animateDirection ? 'slide-' + animateDirection : ''}`}
-              style={{ transition: 'transform 0.3s ease, opacity 0.3s ease' }}
             />
             
-            <div style={{ position: 'absolute', bottom: 100, left: 0, right: 0, textAlign: 'center', padding: '0 20px' }}>
-              <div style={{ fontWeight: 800, fontSize: '1.1rem', marginBottom: 5 }}>{currentPhoto.title}</div>
-              <div style={{ fontSize: '0.8rem', opacity: 0.6 }}>BY {currentPhoto.userName}</div>
+            <div className="lightbox-info">
+              <div style={{ fontWeight: 900, fontSize: '1.2rem', marginBottom: 4 }}>{currentPhoto.title}</div>
+              <div style={{ fontSize: '0.75rem', opacity: 0.6, fontWeight: 700, letterSpacing: 1 }}>SHARED BY {currentPhoto.uploader_name?.toUpperCase() || 'FAMILY'}</div>
               
               <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 20 }}>
-                <button className="btn btn-primary" onClick={() => handleDownload(currentPhoto)}>
-                  DOWNLOAD
+                <button className="btn btn-primary pulse-glow" onClick={() => handleDownload(currentPhoto)} style={{ borderRadius: 30, padding: '12px 30px' }}>
+                  📥 DOWNLOAD
                 </button>
                 {(currentPhoto.uploaded_by === user?.id || user?.role === 'admin') && (
-                  <button className="btn btn-secondary" style={{ color: 'var(--apple-pink)' }} onClick={() => handleDelete(currentPhoto)}>
+                  <button className="btn btn-secondary" style={{ color: 'var(--apple-red)', borderRadius: 30 }} onClick={() => handleDelete(currentPhoto)}>
                     DELETE
                   </button>
                 )}

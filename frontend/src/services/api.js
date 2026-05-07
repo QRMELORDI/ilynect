@@ -53,10 +53,29 @@ export const fetchWithAuth = async (url, options = {}) => {
   }
 };
 
-export const interactVideo = async (videoId, userId, type) => {
+export const interactVideo = async (videoId, userId, type, userName) => {
   return await fetchWithAuth(`${ENDPOINTS.VIDEOS}/${videoId}/interact`, {
     method: 'POST',
-    body: JSON.stringify({ userId, type: type === 'up' ? 'like' : 'dislike' }),
+    body: JSON.stringify({ userId, type, userName }),
+  });
+};
+
+export const getComments = async (contentId) => {
+  const data = await fetchWithAuth(ENDPOINTS.COMMENTS(contentId));
+  return data.comments || [];
+};
+
+export const addComment = async (contentId, userId, userName, text) => {
+  return await fetchWithAuth(ENDPOINTS.ADD_COMMENT, {
+    method: 'POST',
+    body: JSON.stringify({ contentId, userId, userName, text }),
+  });
+};
+
+export const deleteComment = async (commentId, userId) => {
+  return await fetchWithAuth(ENDPOINTS.DELETE_COMMENT(commentId), {
+    method: 'DELETE',
+    body: JSON.stringify({ userId }),
   });
 };
 
@@ -224,7 +243,8 @@ export const uploadPhoto = uploadPhotos;
 
 export const recordDownload = async (id, userId, userName, type = 'video') => {
   try {
-    return await fetchWithAuth(`${ENDPOINTS.VIDEOS}/${id}/download`, {
+    const endpoint = type === 'photo' ? `${ENDPOINTS.PHOTOS}/${id}/download` : `${ENDPOINTS.VIDEOS}/${id}/download`;
+    return await fetchWithAuth(endpoint, {
       method: 'POST',
       body: JSON.stringify({ userId, userName }),
     });
@@ -234,12 +254,13 @@ export const recordDownload = async (id, userId, userName, type = 'video') => {
 };
 
 export const recordVideoDownload = recordDownload;
-export const recordPhotoDownload = recordDownload;
+export const recordPhotoDownload = (id, userId, userName) => recordDownload(id, userId, userName, 'photo');
 
-export const deleteVideo = async (id) => {
+export const deleteVideo = async (id, userId, userName) => {
   try {
     return await fetchWithAuth(`${ENDPOINTS.VIDEOS}/${id}`, {
       method: 'DELETE',
+      body: JSON.stringify({ userId, userName }),
     });
   } catch (err) {
     console.error('Delete video error:', err);
@@ -247,10 +268,11 @@ export const deleteVideo = async (id) => {
   }
 };
 
-export const deletePhoto = async (id) => {
+export const deletePhoto = async (id, userId, userName) => {
   try {
     return await fetchWithAuth(`${ENDPOINTS.PHOTOS}/${id}`, {
       method: 'DELETE',
+      body: JSON.stringify({ userId, userName }),
     });
   } catch (err) {
     console.error('Delete photo error:', err);
@@ -337,7 +359,7 @@ export const checkVersion = async () => {
     return await fetchWithAuth(ENDPOINTS.VERSION);
   } catch (err) {
     console.error('Version check error:', err);
-    return { version: '1.0.5', update_required: false };
+    return { version: '1.1.2', update_required: false };
   }
 };
 
